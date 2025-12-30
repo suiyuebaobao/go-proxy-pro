@@ -13,13 +13,7 @@
     <div class="login-card">
       <h2 class="login-title">Go-AIProxy</h2>
       <p class="login-subtitle">AI API 代理管理平台</p>
-
-      <!-- 临时信息，后面要删除 -->
-      <div class="temp-notice">
-        <p>43.164.131.117 (主IP)</p>
-        <p>49.212.147.181</p>
-        <p style="margin-top: 8px; color: #e74c3c;">小孩子，水平不够，渗透还要继续学习</p>
-      </div>
+      <p class="welcome-text">欢迎各位</p>
 
       <el-form ref="formRef" :model="form" :rules="rules" @submit.prevent="handleLogin">
         <el-form-item prop="username">
@@ -188,7 +182,15 @@ onMounted(() => {
 .login-subtitle {
   text-align: center;
   color: #999;
-  margin-bottom: 30px;
+  margin-bottom: 10px;
+}
+
+.welcome-text {
+  text-align: center;
+  color: #667eea;
+  font-size: 14px;
+  margin-bottom: 20px;
+  font-weight: 500;
 }
 
 .login-btn {
@@ -223,20 +225,5 @@ onMounted(() => {
   color: #999;
   font-size: 12px;
   cursor: pointer;
-}
-
-/* 临时信息样式，后面要删除 */
-.temp-notice {
-  background: #fff3cd;
-  border: 1px solid #ffc107;
-  border-radius: 6px;
-  padding: 12px;
-  margin-bottom: 20px;
-  text-align: center;
-  font-size: 13px;
-  color: #856404;
-}
-.temp-notice p {
-  margin: 4px 0;
 }
 </style>
