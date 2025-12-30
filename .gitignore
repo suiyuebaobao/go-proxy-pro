@@ -26,8 +26,10 @@ tmp/
 *_data.txt
 *_data.xlsx
 *.sql
+*.sql.bak
 accounts_data.txt
 apikeys_data.txt
+!scripts/init.sql
 
 # 备份文件
 *.tar.gz

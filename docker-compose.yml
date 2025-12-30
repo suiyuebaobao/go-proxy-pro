@@ -1,0 +1,75 @@
+version: '3.8'
+
+services:
+  # MySQL 数据库
+  mysql:
+    image: mysql:8.0
+    container_name: go-aiproxy-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: go-aiproxy-root
+      MYSQL_DATABASE: aiproxy
+      MYSQL_USER: aiproxy
+      MYSQL_PASSWORD: aiproxy-password
+      TZ: Asia/Shanghai
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./scripts/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      - --default-authentication-plugin=mysql_native_password
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-pgo-aiproxy-root"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - go-aiproxy-network
+
+  # Go-AIProxy 应用
+  app:
+    build: .
+    container_name: go-aiproxy-app
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      # 数据库配置
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_USER: aiproxy
+      DB_PASSWORD: aiproxy-password
+      DB_NAME: aiproxy
+      
+      # 服务配置
+      PORT: 8080
+      GIN_MODE: release
+      
+      # JWT 密钥（生产环境请修改）
+      JWT_SECRET: go-aiproxy-jwt-secret-change-in-production
+      
+      TZ: Asia/Shanghai
+    depends_on:
+      mysql:
+        condition: service_healthy
+    volumes:
+      - ./logs:/app/logs
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+    networks:
+      - go-aiproxy-network
+
+volumes:
+  mysql-data:
+    driver: local
+
+networks:
+  go-aiproxy-network:
+    driver: bridge

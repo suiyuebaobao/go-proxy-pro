@@ -26,6 +26,53 @@ go build -o aiproxy ./cmd/server
 
 服务默认监听 `8080` 端口。
 
+### Docker 部署 (推荐)
+
+使用 Docker Compose 可以一键部署完整的应用环境（包括 MySQL 数据库）：
+
+```bash
+# 克隆项目
+git clone https://github.com/suiyuebaobao/go-proxy-pro.git
+cd go-proxy-pro/go-aiproxy
+
+# 启动服务（自动拉取镜像、构建、启动）
+docker-compose up -d
+
+# 查看日志
+docker-compose logs -f
+
+# 停止服务
+docker-compose down
+
+# 停止并删除数据卷（⚠️ 会删除数据库数据）
+docker-compose down -v
+```
+
+服务启动后：
+- **Web 管理界面**: http://localhost:8080
+- **API 接口**: http://localhost:8080/claude/v1/messages 等
+- **MySQL 数据库**: localhost:3306
+
+#### Docker 环境变量
+
+可在 `docker-compose.yml` 中修改以下配置：
+
+| 变量名 | 默认值 | 说明 |
+|--------|--------|------|
+| `MYSQL_ROOT_PASSWORD` | `go-aiproxy-root` | MySQL root 密码 |
+| `MYSQL_DATABASE` | `aiproxy` | 数据库名 |
+| `MYSQL_USER` | `aiproxy` | MySQL 用户名 |
+| `MYSQL_PASSWORD` | `aiproxy-password` | MySQL 密码 |
+| `PORT` | `8080` | 应用端口 |
+| `JWT_SECRET` | `go-aiproxy-jwt-secret-change-in-production` | JWT 密钥（生产环境请修改） |
+
+#### 生产环境部署建议
+
+1. **修改默认密码**：修改 `docker-compose.yml` 中的所有默认密码
+2. **持久化数据**：数据已通过 Docker volumes 持久化，升级不会丢失数据
+3. **健康检查**：应用内置健康检查 `/health` 端点
+4. **日志管理**：日志文件挂载到 `./logs` 目录
+
 ### 2. 默认管理员账号
 
 - 用户名: `admin`

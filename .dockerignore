@@ -1,0 +1,69 @@
+# Git files
+.git
+.gitignore
+.github
+
+# Documentation
+docs/
+*.md
+!README.md
+
+# IDE and editors
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Build artifacts (will be built in container)
+aiproxy
+aiproxy-test
+go-aiproxy
+bin/
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Frontend artifacts (will be built in container)
+web/dist/
+web/node_modules/
+
+# Logs and temporary data
+logs/
+*.log
+tmp/
+temp/
+*.tmp
+
+# Sensitive data
+*_data.txt
+*_data.xlsx
+*.sql.bak
+accounts_data.txt
+apikeys_data.txt
+backup_*
+*.tar.gz
+*.zip
+
+# Configuration (will use environment variables in Docker)
+configs/config.yaml
+configs/*.yaml
+!configs/config.yaml.example
+
+# Test files
+*_test.go
+coverage.txt
+
+# Scripts not needed in container
+scripts/*.sh
+scripts/init.sql
+
+# Docker files
+docker-compose.yml
+.dockerignore
+Dockerfile
+
+# Backups
+docs/备份/
