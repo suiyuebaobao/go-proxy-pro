@@ -33,6 +33,34 @@
 - **权限控制**：平台/模型级别的访问权限控制
 - **使用统计**：请求次数、Token 消耗、费用统计
 
+## 系统截图
+
+### 登录页面
+![登录页面](screenshots/screenshot-01.png)
+
+### 系统监控
+![系统监控](screenshots/screenshot-02.png)
+
+### 账户管理
+![账户管理](screenshots/screenshot-03.png)
+
+### 模型管理
+![模型管理](screenshots/screenshot-04.png)
+
+### 用户管理
+![用户管理](screenshots/screenshot-05.png)
+
+### API Key管理
+![API Key管理](screenshots/screenshot-06.png)
+
+### 请求日志
+![请求日志](screenshots/screenshot-07.png)
+
+### 使用统计
+![使用统计](screenshots/screenshot-08.png)
+
+更多截图请查看 [screenshots目录](screenshots/)
+
 ## 快速开始
 
 ### 1. 编译运行
