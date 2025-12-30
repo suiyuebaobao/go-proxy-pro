@@ -2,6 +2,14 @@
 
 一个 Go 语言实现的 AI 代理服务，支持多平台（Claude、OpenAI、Gemini）账户管理和统一 API 接口。
 
+[![QQ群](https://img.shields.io/badge/QQ群-加入交流-orange?logo=tencentqq&style=flat-square)](https://github.com/suiyuebaobao/go-proxy-pro#联系交流)
+
+## 联系交流
+
+- **QQ 交流群**：访问网站主页扫描二维码加入
+- **GitHub Issues**：[提交问题](https://github.com/suiyuebaobao/go-proxy-pro/issues)
+- **GitHub Discussions**：[参与讨论](https://github.com/suiyuebaobao/go-proxy-pro/discussions)
+
 ## 功能特性
 
 - **多平台支持**：Claude (Official/Console/CCR/Bedrock)、OpenAI (API/Azure/Responses)、Gemini

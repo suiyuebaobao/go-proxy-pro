@@ -496,9 +496,17 @@ export ANTHROPIC_API_KEY="YOUR_API_KEY"</code></pre>
               <span>MySQL 8.0+</span>
             </div>
             <div class="link-group">
-              <h4>支持</h4>
+              <h4>联系我们</h4>
+              <a href="https://github.com/suiyuebaobao/go-proxy-pro" target="_blank">GitHub</a>
               <a href="/login">控制台</a>
             </div>
+          </div>
+        </div>
+
+        <div class="footer-qq">
+          <div class="qq-qr">
+            <img src="/qq-group.jpg" alt="QQ群二维码" />
+            <p>扫码加入 QQ 交流群</p>
           </div>
         </div>
 
@@ -2283,6 +2291,47 @@ onUnmounted(() => {
   margin: 0;
   color: #64748b;
   font-size: 0.875rem;
+}
+
+.footer-qq {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem 0;
+  border-top: 1px solid rgba(99, 102, 241, 0.1);
+}
+
+.qq-qr {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.5rem;
+  background: rgba(99, 102, 241, 0.05);
+  border: 1px solid rgba(99, 102, 241, 0.2);
+  border-radius: 16px;
+  transition: all 0.3s ease;
+}
+
+.qq-qr:hover {
+  background: rgba(99, 102, 241, 0.1);
+  border-color: rgba(99, 102, 241, 0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(99, 102, 241, 0.15);
+}
+
+.qq-qr img {
+  width: 180px;
+  height: 180px;
+  border-radius: 12px;
+  object-fit: cover;
+}
+
+.qq-qr p {
+  margin: 0;
+  color: #a855f7;
+  font-size: 0.938rem;
+  font-weight: 500;
 }
 
 /* 响应式设计 */
