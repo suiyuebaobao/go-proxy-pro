@@ -507,6 +507,10 @@ export ANTHROPIC_API_KEY="YOUR_API_KEY"</code></pre>
           <div class="qq-qr">
             <img src="/qq-group.jpg" alt="QQ群二维码" />
             <p>扫码加入 QQ 交流群</p>
+            <a href="https://qm.qq.com/q/iJ4bHLlMEa" target="_blank" class="qq-link-btn">
+              <i class="fa-solid fa-link"></i>
+              点击加入群聊【go-proxy-pro】
+            </a>
           </div>
         </div>
 
@@ -2332,6 +2336,30 @@ onUnmounted(() => {
   color: #a855f7;
   font-size: 0.938rem;
   font-weight: 500;
+}
+
+.qq-link-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+  padding: 0.5rem 1rem;
+  background: linear-gradient(135deg, #a855f7 0%, #6366f1 100%);
+  color: white;
+  text-decoration: none;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.qq-link-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(168, 85, 247, 0.4);
+}
+
+.qq-link-btn i {
+  font-size: 0.75rem;
 }
 
 /* 响应式设计 */
