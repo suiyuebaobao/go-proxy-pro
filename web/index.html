@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Go-AIProxy</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <script>
+    ;(function () {
+      var overlayId = '__app_boot_overlay__'
+      var startAt = Date.now()
+
+      function appendToBody(el) {
+        if (document.body) {
+          document.body.appendChild(el)
+          return
+        }
+        document.addEventListener('DOMContentLoaded', function () {
+          document.body.appendChild(el)
+        })
+      }
+
+      function showOverlay(title, detail) {
+        if (document.getElementById(overlayId)) return
+        var el = document.createElement('div')
+        el.id = overlayId
+        el.style.cssText =
+          'position:fixed;inset:0;z-index:99999;background:#0b1020;color:#e5e7eb;font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica Neue,Arial;display:flex;align-items:center;justify-content:center;padding:24px;'
+
+        var html = ''
+        html += '<div style="max-width:860px;width:100%;background:#111827;border:1px solid #374151;border-radius:12px;padding:18px 18px 16px;">'
+        html += '<div style="font-size:16px;font-weight:700;margin-bottom:10px;">' + title + '</div>'
+        html += '<div style="font-size:13px;line-height:1.6;color:#d1d5db;white-space:pre-wrap;">' + detail + '</div>'
+        html += '<div style="margin-top:12px;font-size:12px;color:#9ca3af;">URL: ' + location.href + '</div>'
+        html += '</div>'
+        el.innerHTML = html
+
+        appendToBody(el)
+      }
+
+      window.addEventListener(
+        'error',
+        function (e) {
+          var t = e && e.target
+          if (t && (t.tagName === 'SCRIPT' || t.tagName === 'LINK')) {
+            showOverlay(
+              '静态资源加载失败（可能是 404 / 反向代理未转发 / 缓存问题）',
+              '资源：' +
+                (t.href || t.src || '') +
+                '\n耗时：' +
+                (Date.now() - startAt) +
+                'ms\n建议：强制刷新 Ctrl+F5；检查 /assets 是否能访问。'
+            )
+          }
+        },
+        true
+      )
+
+      window.addEventListener('unhandledrejection', function (e) {
+        showOverlay(
+          '前端运行异常（Promise 未捕获）',
+          '错误：' + String((e && e.reason) || e) + '\n耗时：' + (Date.now() - startAt) + 'ms'
+        )
+      })
+
+      // 兜底：捕获普通 JS 运行时错误（不会依赖 DevTools）
+      window.addEventListener(
+        'error',
+        function (e) {
+          var t = e && e.target
+          if (t && (t.tagName === 'SCRIPT' || t.tagName === 'LINK')) return
+          var msg = (e && e.message) || String(e)
+          var src = (e && e.filename) || ''
+          var line = (e && e.lineno) || ''
+          var col = (e && e.colno) || ''
+          showOverlay(
+            '前端脚本错误',
+            '错误：' +
+              msg +
+              '\n位置：' +
+              src +
+              ':' +
+              line +
+              ':' +
+              col +
+              '\n耗时：' +
+              (Date.now() - startAt) +
+              'ms'
+          )
+        },
+        true
+      )
+    })()
+  </script>
+</head>
+<body>
+  <div id="app"></div>
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

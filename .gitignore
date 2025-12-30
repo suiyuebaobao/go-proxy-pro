@@ -1,0 +1,57 @@
+# 二进制文件
+aiproxy
+aiproxy-test
+go-aiproxy
+bin/*
+*.exe
+*.dll
+*.so
+*.dylib
+
+# 前端构建产物
+web/dist/
+web/node_modules/
+web/.env.local
+web/.env.*.local
+
+# Go 模块缓存
+go.sum
+
+# 日志文件
+logs/
+*.log
+tmp/
+
+# 数据文件（可能包含敏感信息）
+*_data.txt
+*_data.xlsx
+*.sql
+accounts_data.txt
+apikeys_data.txt
+
+# 备份文件
+*.tar.gz
+*.zip
+backup_*
+
+# 配置文件（可能包含敏感信息）
+configs/config.yaml
+configs/*.yaml
+!configs/config.yaml.example
+
+# IDE 和编辑器
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# 临时文件
+tmp/
+temp/
+*.tmp
+
+# 测试文件
+*_test.go
+coverage.txt

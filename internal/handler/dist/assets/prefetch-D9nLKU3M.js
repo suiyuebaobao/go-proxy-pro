@@ -1,0 +1,1 @@
+function f(){try{const t=navigator.connection;if(t&&(t.saveData||t.effectiveType==="2g"||t.effectiveType==="slow-2g"))return!1}catch{}return!0}const c=new Set;function r(t,n){if(f()&&!c.has(t)){c.add(t);try{const e=n();e&&typeof e.catch=="function"&&e.catch(()=>{})}catch{}}}export{r as p};

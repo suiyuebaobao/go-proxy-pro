@@ -1,0 +1,35 @@
+server:
+  port: 8080
+  mode: debug  # debug, release, test
+
+log:
+  dir: logs           # 日志目录
+  level: debug        # 日志级别: debug, info, warn, error
+
+mysql:
+  host: localhost
+  port: 3306
+  user: root
+  password: ""
+  database: aiproxy
+  charset: utf8mb4
+  max_idle_conns: 10
+  max_open_conns: 100
+
+redis:
+  host: localhost
+  port: 6379
+  password: ""
+  db: 0
+
+jwt:
+  secret: "1d8c9a558daff3062c59eb9980c77baf14d020dd7d30221c8edd8c43275582c6"
+  expire_hours: 24
+
+# 缓存配置
+cache:
+  session_ttl: 60              # 会话绑定 TTL（分钟），默认 60
+  session_renewal_ttl: 14      # 会话续期阈值（分钟），剩余时间低于此值时自动续期
+  unavailable_ttl: 5           # 账户临时不可用 TTL（分钟），默认 5
+  concurrency_ttl: 5           # 并发计数 TTL（分钟），防止计数泄漏
+  default_concurrency_max: 5   # 默认账户并发上限

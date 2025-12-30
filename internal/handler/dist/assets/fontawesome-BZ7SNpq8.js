@@ -1,0 +1,2 @@
+const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["assets/fontawesome-DA2Bk-Y5.css","assets/solid-BChFmcUS.css","assets/brands-D4n-GVpC.css"])))=>i.map(i=>d[i]);
+import{B as o}from"./index-DH-ATN2M.js";let e=null;function _(){return e||(e=Promise.all([o(()=>Promise.resolve({}),__vite__mapDeps([0])),o(()=>Promise.resolve({}),__vite__mapDeps([1])),o(()=>Promise.resolve({}),__vite__mapDeps([2]))]),e.catch(()=>{}),e)}export{_ as e};

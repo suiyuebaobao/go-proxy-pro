@@ -1,0 +1,2 @@
+[mysql] 2025/12/30 06:41:57 connection.go:49: closing bad idle connection: EOF
+[mysql] 2025/12/30 06:41:57 connection.go:49: closing bad idle connection: EOF
