@@ -12,7 +12,7 @@ import { ref } from 'vue'
 import api from '@/api'
 
 export const useSiteStore = defineStore('site', () => {
-  const siteName = ref(document.title || '叶渡AI Hub')
+  const siteName = ref(document.title || 'Go Proxy Pro')
   let fetched = false
 
   async function fetchSiteName() {

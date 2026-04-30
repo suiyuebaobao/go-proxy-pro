@@ -112,7 +112,7 @@ func (h *ConfigHandler) notifyConfigChange(configs map[string]string) {
 func (h *ConfigHandler) GetSiteInfo(c *gin.Context) {
 	siteName := h.configService.GetString(model.ConfigSiteName)
 	if siteName == "" {
-		siteName = "叶渡AI Hub"
+		siteName = "Go Proxy Pro"
 	}
 	c.JSON(http.StatusOK, gin.H{
 		"site_name": siteName,

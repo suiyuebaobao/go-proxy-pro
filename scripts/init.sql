@@ -1,4 +1,4 @@
--- 叶渡AI Hub Database Initialization Script
+-- Go Proxy Pro Database Initialization Script
 -- This script is automatically run by MySQL on first container start
 -- via docker-entrypoint-initdb.d/
 

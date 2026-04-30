@@ -25,7 +25,7 @@
           </template>
           <el-form label-width="140px" v-loading="loading">
             <el-form-item label="站点名称">
-              <el-input v-model="configs.site_name" placeholder="叶渡AI Hub" style="width: 300px" maxlength="30" show-word-limit />
+              <el-input v-model="configs.site_name" placeholder="Go Proxy Pro" style="width: 300px" maxlength="30" show-word-limit />
               <div class="form-tip">显示在登录页、侧栏、首页等处的系统名称，修改后刷新页面生效</div>
             </el-form-item>
           </el-form>
@@ -511,7 +511,7 @@ const configs = reactive({
   // 配额策略
   quota_policy: 'off',
   // 站点设置
-  site_name: '叶渡AI Hub'
+  site_name: 'Go Proxy Pro'
 })
 
 const configList = ref([])
@@ -629,7 +629,7 @@ async function saveConfigs() {
       // 配额策略
       quota_policy: configs.quota_policy || 'off',
       // 站点设置
-      site_name: configs.site_name || '叶渡AI Hub'
+      site_name: configs.site_name || 'Go Proxy Pro'
     }
     await api.updateSystemConfigs(toSave)
     ElMessage.success('配置保存成功')

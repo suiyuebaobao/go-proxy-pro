@@ -1,8 +1,8 @@
 <div align="center">
 
-  ![叶渡AI Hub Logo](web/public/favicon.svg)
+  ![Go Proxy Pro Logo](web/public/favicon.svg)
 
-  # 叶渡AI Hub
+  # Go Proxy Pro
 
   ### 🚀 企业级 AI API 代理服务
 
@@ -285,6 +285,6 @@ fuye/
 
   **本项目 95% 使用 GLM 配合 Claude Code 开发完成**
 
-  [⬆ 返回顶部](#叶渡ai-hub)
+  [⬆ 返回顶部](#go-proxy-pro)
 
 </div>

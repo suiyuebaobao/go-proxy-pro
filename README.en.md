@@ -1,6 +1,6 @@
 <div align="center">
 
-  # 叶渡AI Hub
+  # Go Proxy Pro
 
   ### 🚀 Enterprise-Grade AI API Proxy Service
 
@@ -283,6 +283,6 @@ If you find this project helpful, please consider giving it a star! ⭐
 
   **95% of this project was developed using GLM with Claude Code**
 
-  [⬆ Back to Top](#叶渡ai-hub)
+  [⬆ Back to Top](#go-proxy-pro)
 
 </div>

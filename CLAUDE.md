@@ -4,7 +4,7 @@
 
 ## 项目概述
 
-叶渡AI Hub 是一个企业级 AI API 代理服务，提供统一的多平台 AI API（Claude、OpenAI、Gemini）访问接口，支持账户池管理、负载均衡、计费和监控功能。
+Go Proxy Pro 是一个企业级 AI API 代理服务，提供统一的多平台 AI API（Claude、OpenAI、Gemini）访问接口，支持账户池管理、负载均衡、计费和监控功能。
 
 **技术架构**：Go 后端 (Gin) + Vue 3 前端 (Element Plus) + MySQL 8.0
 

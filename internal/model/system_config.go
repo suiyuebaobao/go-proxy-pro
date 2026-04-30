@@ -129,5 +129,5 @@ var DefaultConfigs = []SystemConfig{
 	{Key: ConfigTokenRefreshCooldown, Value: "30", Type: "int", Desc: "Token 刷新失败冷却时间（分钟）", Category: "health_check"},
 	{Key: ConfigTokenRefreshMaxRetries, Value: "3", Type: "int", Desc: "Token 刷新最大重试次数", Category: "health_check"},
 	// 站点信息
-	{Key: ConfigSiteName, Value: "叶渡AI Hub", Type: "string", Desc: "站点显示名称（登录页、侧栏、首页等处显示）", Category: "site"},
+	{Key: ConfigSiteName, Value: "Go Proxy Pro", Type: "string", Desc: "站点显示名称（登录页、侧栏、首页等处显示）", Category: "site"},
 }
