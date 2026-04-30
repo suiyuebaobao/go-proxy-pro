@@ -33,22 +33,29 @@
 
 ### 🎯 Multi-Platform Support
 - **Claude**: Official, Console, CCR, Bedrock
-- **OpenAI**: API, Azure, Responses API
+- **OpenAI**: API, Azure, Responses API (Codex CLI support)
 - **Gemini**: OAuth & API Key modes
+- **More Platforms**: xAI (Grok), DeepSeek, Qwen, GLM, Mistral, Moonshot, Doubao, Baichuan, Yi, MiniMax, Stepfun, Spark, SiliconFlow, etc. (auto-detection)
 
 ### 🔧 Powerful Features
-- **Account Pool Management**: Load balancing, failover, rotation
-- **User API Keys**: Generate dedicated API keys for users
+- **Account Pool Management**: Load balancing, failover, rotation, session stickiness
+- **User API Keys**: Dedicated API keys with RPM/RPD rate limits
 - **Permission Control**: Platform and model-level access control
-- **Usage Statistics**: Request count, token consumption, cost tracking
-- **OpenAI Responses API**: Support for Codex CLI and Claude Code
-- **Health Monitoring**: Automatic account health checks and recovery
+- **Usage Statistics**: Request count, token consumption, cost tracking, daily/monthly/model reports
+- **Package System**: Usage-based / per-request / subscription billing with quota checking and auto-alerts
+- **Alert System**: Custom alert rules for quota exhaustion, account bans, rate limiting, etc.
+- **Health Monitoring**: Automatic account health checks and recovery, system resource dashboard
 
 ### 🛡️ Enterprise Ready
-- JWT authentication for admin panel
-- API key authentication for proxy API
-- Request logging and audit trails
-- Rate limiting and concurrency control
+- JWT admin panel + API Key proxy authentication
+- **IP Access Control**: Global IP blacklist + per-API-Key IP whitelist (CIDR support)
+- **Rate Limiting**: Per-API-Key RPM/RPD sliding window throttling
+- **Quota Check**: Package quota/count enforcement with enforce / warn / off policies
+- **Concurrency Control**: Per-user max concurrent request limits
+- **Client Filtering**: Identify Claude Code, Cursor, Cline, etc. with allow/block lists
+- Request logging and operation audit trails
+- Dark / Light theme switching
+- Dynamic site name configuration
 - HTTPS/SSL support with Nginx
 
 ---

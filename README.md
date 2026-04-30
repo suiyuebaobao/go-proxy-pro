@@ -33,22 +33,29 @@
 
 ### 🎯 多平台支持
 - **Claude**: Official、Console、CCR、Bedrock
-- **OpenAI**: API、Azure、Responses API
+- **OpenAI**: API、Azure、Responses API（支持 Codex CLI）
 - **Gemini**: OAuth 和 API Key 模式
+- **更多平台**: xAI (Grok)、DeepSeek、通义千问、智谱 GLM、Mistral、月之暗面、豆包、百川、零一万物、MiniMax、阶跃星辰、讯飞星火、硅基流动等（自动识别模型平台）
 
 ### 🔧 强大功能
-- **账户池管理**: 负载均衡、故障转移、轮询调度
-- **用户 API Key**: 用户可生成专属 API Key
+- **账户池管理**: 负载均衡、故障转移、轮询调度、会话粘性
+- **用户 API Key**: 用户可生成专属 API Key，支持 RPM/RPD 速率限制
 - **权限控制**: 平台和模型级别的访问权限控制
-- **使用统计**: 请求次数、Token 消耗、费用统计
-- **OpenAI Responses API**: 支持 Codex CLI 和 Claude Code
-- **健康监控**: 自动账户健康检查和恢复
+- **使用统计**: 请求次数、Token 消耗、费用统计、日/月/模型维度报表
+- **套餐系统**: 按量/按次/订阅计费，配额检查与自动告警
+- **告警系统**: 自定义告警规则，支持配额耗尽、账户封禁、限速等事件通知
+- **健康监控**: 自动账户健康检查和恢复、系统资源监控面板
 
 ### 🛡️ 企业级特性
-- JWT 认证管理后台
-- API Key 认证代理 API
-- 请求日志和审计追踪
-- 限流和并发控制
+- JWT 认证管理后台 + API Key 认证代理 API
+- **IP 访问控制**: 全局 IP 黑名单 + API Key 级 IP 白名单（支持 CIDR）
+- **速率限制**: API Key 级 RPM（每分钟）/ RPD（每日）滑动窗口限流
+- **配额检查**: 套餐额度/次数校验，支持 enforce（拦截）/ warn（告警）/ off 三种策略
+- **并发控制**: 用户级最大并发请求数限制
+- **客户端过滤**: 识别 Claude Code、Cursor、Cline 等客户端，支持黑白名单
+- 请求日志和操作审计追踪
+- 暗色/亮色主题切换
+- 站点名称动态配置
 - Nginx HTTPS/SSL 支持
 
 ---
