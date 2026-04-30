@@ -55,9 +55,9 @@
           </div>
         </div>
 
-        <!-- 子平台选择 -->
-        <div v-if="platformGroup" class="subplatform-section">
-          <p class="subplatform-label">选择具体平台类型：</p>
+        <!-- 子平台选择（仅多子类型平台显示） -->
+        <div v-if="currentSubplatforms.length > 0" class="subplatform-section">
+          <p class="subplatform-label">选择具体接入方式：</p>
           <div class="subplatform-grid">
             <label
               v-for="sub in currentSubplatforms"
@@ -371,7 +371,7 @@
         </template>
 
         <!-- Gemini 配置 -->
-        <template v-if="form.type === 'gemini' && form.addType === 'apikey'">
+        <template v-if="(form.type === 'gemini' || form.type === 'gemini-api') && form.addType === 'apikey'">
           <el-form :model="form" label-position="top">
             <el-form-item required>
               <template #label>
@@ -393,6 +393,42 @@
             </el-form-item>
             <el-form-item label="API Base URL（可选）">
               <el-input v-model="form.api_url" placeholder="默认: https://generativelanguage.googleapis.com/v1beta" />
+            </el-form-item>
+          </el-form>
+        </template>
+
+        <!-- OpenAI 兼容平台通用配置（DeepSeek、通义千问、智谱、Kimi 等） -->
+        <template v-if="openaiCompatibleTypes.includes(form.type)">
+          <el-form :model="form" label-position="top">
+            <el-form-item required>
+              <template #label>
+                <span class="label-with-icon">
+                  <i class="fa-solid fa-key"></i>
+                  API Key
+                </span>
+              </template>
+              <el-input
+                v-model="form.api_key"
+                type="password"
+                show-password
+                placeholder="请输入 API Key"
+              />
+            </el-form-item>
+            <el-form-item required>
+              <template #label>
+                <span class="label-with-icon">
+                  <i class="fa-solid fa-link"></i>
+                  API Base URL
+                </span>
+              </template>
+              <el-input
+                v-model="form.api_url"
+                :placeholder="platformBaseURLHints[form.type] || 'https://api.example.com'"
+              />
+              <div class="input-tip">
+                <i class="fa-solid fa-info-circle"></i>
+                填写平台 API 的基础地址（不含 /v1/chat/completions 后缀）
+              </div>
             </el-form-item>
           </el-form>
         </template>
@@ -745,32 +781,29 @@ const step = ref(1)
 const submitting = ref(false)
 const platformGroup = ref('')
 
-// 平台分组定义
+// 平台定义 - 每个平台独立卡片
 const platformGroups = [
-  {
-    key: 'claude',
-    name: 'Claude',
-    desc: 'Anthropic AI',
-    icon: 'fa-solid fa-brain',
-    gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
-  },
-  {
-    key: 'openai',
-    name: 'OpenAI',
-    desc: 'GPT 系列模型',
-    icon: 'fa-solid fa-robot',
-    gradient: 'linear-gradient(135deg, #11998e 0%, #38ef7d 100%)'
-  },
-  {
-    key: 'gemini',
-    name: 'Gemini',
-    desc: 'Google AI',
-    icon: 'fa-brands fa-google',
-    gradient: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)'
-  }
+  { key: 'claude', name: 'Claude', desc: 'Anthropic AI', icon: 'fa-solid fa-brain', gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' },
+  { key: 'openai', name: 'OpenAI', desc: 'GPT 系列模型', icon: 'fa-solid fa-robot', gradient: 'linear-gradient(135deg, #11998e 0%, #38ef7d 100%)' },
+  { key: 'gemini', name: 'Gemini', desc: 'Google AI', icon: 'fa-brands fa-google', gradient: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)' },
+  { key: 'deepseek', name: 'DeepSeek', desc: '深度求索', icon: 'fa-solid fa-microchip', gradient: 'linear-gradient(135deg, #4a7fd4 0%, #2756a8 100%)' },
+  { key: 'qwen', name: '通义千问', desc: '阿里云百炼', icon: 'fa-solid fa-cloud', gradient: 'linear-gradient(135deg, #6236ff 0%, #4a1fd0 100%)' },
+  { key: 'glm', name: '智谱 GLM', desc: '智谱 AI', icon: 'fa-solid fa-atom', gradient: 'linear-gradient(135deg, #3366cc 0%, #224499 100%)' },
+  { key: 'moonshot', name: 'Kimi', desc: '月之暗面', icon: 'fa-solid fa-moon', gradient: 'linear-gradient(135deg, #3a3a5c 0%, #1a1a2e 100%)' },
+  { key: 'doubao', name: '豆包', desc: '字节火山引擎', icon: 'fa-solid fa-fire', gradient: 'linear-gradient(135deg, #ff6a3d 0%, #d44a1d 100%)' },
+  { key: 'baichuan', name: '百川智能', desc: 'Baichuan', icon: 'fa-solid fa-mountain', gradient: 'linear-gradient(135deg, #2c7be5 0%, #1a5ab8 100%)' },
+  { key: 'yi', name: '零一万物', desc: 'Yi 系列', icon: 'fa-solid fa-star', gradient: 'linear-gradient(135deg, #00b386 0%, #008060 100%)' },
+  { key: 'minimax', name: 'MiniMax', desc: 'MiniMax AI', icon: 'fa-solid fa-wand-sparkles', gradient: 'linear-gradient(135deg, #7c4dff 0%, #5a2ed4 100%)' },
+  { key: 'stepfun', name: '阶跃星辰', desc: 'Step 系列', icon: 'fa-solid fa-stairs', gradient: 'linear-gradient(135deg, #2196f3 0%, #1565c0 100%)' },
+  { key: 'spark', name: '讯飞星火', desc: 'Spark 系列', icon: 'fa-solid fa-fire-flame-curved', gradient: 'linear-gradient(135deg, #e53935 0%, #b71c1c 100%)' },
+  { key: 'siliconflow', name: '硅基流动', desc: 'SiliconFlow', icon: 'fa-solid fa-microchip', gradient: 'linear-gradient(135deg, #6366f1 0%, #4338ca 100%)' },
+  { key: 'xai', name: 'xAI', desc: 'Grok 系列', icon: 'fa-solid fa-bolt-lightning', gradient: 'linear-gradient(135deg, #1da1f2 0%, #0d7bbf 100%)' },
+  { key: 'mistral', name: 'Mistral', desc: 'Mistral AI', icon: 'fa-solid fa-wind', gradient: 'linear-gradient(135deg, #ff7000 0%, #cc5800 100%)' },
+  { key: 'cohere', name: 'Cohere', desc: 'Command 系列', icon: 'fa-solid fa-circle-nodes', gradient: 'linear-gradient(135deg, #39594d 0%, #263d34 100%)' },
+  { key: 'custom', name: '自定义', desc: 'OpenAI 兼容', icon: 'fa-solid fa-plug', gradient: 'linear-gradient(135deg, #8898aa 0%, #6c757d 100%)' },
 ]
 
-// 子平台定义
+// 子平台定义（仅多子类型的平台需要二级选择）
 const subplatformMap = {
   claude: [
     { value: 'claude-official', label: 'Claude Official', desc: 'OAuth 认证', icon: 'fa-solid fa-key', color: '#667eea' },
@@ -778,12 +811,17 @@ const subplatformMap = {
     { value: 'bedrock', label: 'AWS Bedrock', desc: 'AWS 托管服务', icon: 'fa-brands fa-aws', color: '#ff9900' }
   ],
   openai: [
-    { value: 'openai', label: 'OpenAI 三方 API', desc: 'API Key 认证', icon: 'fa-solid fa-bolt', color: '#11998e' },
+    { value: 'openai', label: 'OpenAI API', desc: 'API Key 认证', icon: 'fa-solid fa-bolt', color: '#11998e' },
     { value: 'openai-responses', label: 'ChatGPT 官方', desc: 'OAuth / SessionKey', icon: 'fa-solid fa-comments', color: '#38ef7d' },
     { value: 'azure-openai', label: 'Azure OpenAI', desc: 'Azure 托管', icon: 'fa-brands fa-microsoft', color: '#0078d4' }
   ],
   gemini: [
-    { value: 'gemini', label: 'Gemini', desc: 'Google AI Studio', icon: 'fa-brands fa-google', color: '#4facfe' }
+    { value: 'gemini', label: 'Gemini OAuth', desc: 'Google OAuth', icon: 'fa-brands fa-google', color: '#4facfe' },
+    { value: 'gemini-api', label: 'Gemini API', desc: 'API Key 认证', icon: 'fa-brands fa-google', color: '#3d8bd4' }
+  ],
+  custom: [
+    { value: 'custom', label: '自定义兼容 API', desc: '任意 OpenAI 兼容接口', icon: 'fa-solid fa-plug', color: '#607d8b' },
+    { value: 'droid', label: 'Droid', desc: '第三方 Droid', icon: 'fa-solid fa-android', color: '#78909c' }
   ]
 }
 
@@ -803,25 +841,19 @@ const loadingMappings = ref(false)
 
 // 根据当前平台筛选模型
 const availableModels = computed(() => {
-  // 获取当前账户的平台
-  let currentPlatform = ''
-  if (platformGroup.value) {
-    currentPlatform = platformGroup.value
-  } else if (form.type) {
-    // 从账户类型推断平台
+  let groupKey = platformGroup.value
+  if (!groupKey && form.type) {
     for (const [key, subs] of Object.entries(subplatformMap)) {
       if (subs.some(s => s.value === form.type)) {
-        currentPlatform = key
+        groupKey = key
         break
       }
     }
+    if (!groupKey) groupKey = form.type
   }
 
-  // 如果没有选择平台，返回空
-  if (!currentPlatform) return []
-
-  // 筛选对应平台的模型
-  return allModels.value.filter(g => g.platform.toLowerCase() === currentPlatform)
+  if (!groupKey) return []
+  return allModels.value.filter(g => g.platform.toLowerCase() === groupKey)
 })
 
 // 根据 proxy_id 获取选中的代理对象
@@ -939,15 +971,38 @@ const needsApiKey = computed(() => {
   return false
 })
 
+// OpenAI 兼容的平台类型列表（需要 API Key + Base URL 配置）
+const openaiCompatibleTypes = [
+  'deepseek', 'qwen', 'glm', 'moonshot', 'doubao', 'baichuan',
+  'yi', 'minimax', 'stepfun', 'spark', 'siliconflow', 'xai', 'mistral', 'cohere', 'custom'
+]
+
+// 各平台默认 Base URL 提示
+const platformBaseURLHints = {
+  'deepseek': 'https://api.deepseek.com',
+  'qwen': 'https://dashscope.aliyuncs.com/compatible-mode',
+  'glm': 'https://open.bigmodel.cn/api/paas',
+  'moonshot': 'https://api.moonshot.cn',
+  'doubao': 'https://ark.cn-beijing.volces.com/api',
+  'baichuan': 'https://api.baichuan-ai.com',
+  'yi': 'https://api.lingyiwanwu.com',
+  'minimax': 'https://api.minimax.chat',
+  'stepfun': 'https://api.stepfun.com',
+  'spark': 'https://spark-api-open.xf-yun.com',
+  'siliconflow': 'https://api.siliconflow.cn',
+  'xai': 'https://api.x.ai',
+  'mistral': 'https://api.mistral.ai',
+  'cohere': 'https://api.cohere.com/compatibility',
+  'custom': 'https://your-api-endpoint.com',
+}
+
 // 是否显示平台特定配置
 const showPlatformConfig = computed(() => {
   const type = form.type
-  // 直接需要配置的类型
   if (['claude-console', 'bedrock', 'azure-openai'].includes(type)) return true
-  // API Key 方式需要配置
-  if ((type === 'openai' || type === 'gemini') && form.addType === 'apikey') return true
-  // ChatGPT 官方的 SessionKey 方式需要配置
+  if ((type === 'openai' || type === 'gemini' || type === 'gemini-api') && form.addType === 'apikey') return true
   if (type === 'openai-responses' && form.addType === 'cookie') return true
+  if (openaiCompatibleTypes.includes(type)) return true
   return false
 })
 
@@ -957,11 +1012,16 @@ const getPlatformConfigTitle = computed(() => {
     'claude-console': 'Claude Console 配置',
     'bedrock': 'AWS Bedrock 配置',
     'azure-openai': 'Azure OpenAI 配置',
-    'openai': 'OpenAI 三方 API 配置',
+    'openai': 'OpenAI API 配置',
     'openai-responses': 'ChatGPT 官方配置',
-    'gemini': 'Gemini 配置'
+    'gemini': 'Gemini 配置',
+    'gemini-api': 'Gemini API 配置',
   }
   if (form.addType === 'manual') return 'Token 配置'
+  if (openaiCompatibleTypes.includes(form.type)) {
+    const group = platformGroups.find(g => g.key === form.type)
+    return (group?.name || form.type) + ' 配置'
+  }
   return typeLabels[form.type] || '平台配置'
 })
 
@@ -1060,12 +1120,21 @@ watch(visible, async (val) => {
 function selectPlatformGroup(key) {
   platformGroup.value = key
   form.type = ''
-  form.allowedModelsList = [] // 切换平台时清空已选模型
-  // 根据平台组设置默认添加方式
+  form.allowedModelsList = []
+
+  // 单类型平台自动选择 type（无需二级选择）
+  const subs = subplatformMap[key]
+  if (!subs) {
+    form.type = key
+    form.addType = 'apikey'
+    return
+  }
+
+  // 多子类型平台设置默认添加方式
   if (key === 'claude') {
-    form.addType = 'cookie'  // Claude 默认使用 SessionKey
+    form.addType = 'cookie'
   } else {
-    form.addType = 'apikey'  // OpenAI/Gemini 默认使用 API Key
+    form.addType = 'apikey'
   }
 }
 
@@ -1073,13 +1142,11 @@ function selectPlatformGroup(key) {
 watch(() => form.type, (newType) => {
   if (!newType) return
   if (newType === 'claude-official') {
-    form.addType = 'cookie'  // Claude Official 默认使用 SessionKey
+    form.addType = 'cookie'
   } else if (newType === 'openai-responses') {
-    form.addType = 'oauth'  // ChatGPT 官方默认使用 OAuth
-  } else if (['claude-console', 'bedrock', 'azure-openai'].includes(newType)) {
-    form.addType = 'apikey'  // API Key 类型的平台
-  } else if (['openai', 'gemini'].includes(newType)) {
-    form.addType = 'apikey'  // OpenAI/Gemini 默认使用 API Key
+    form.addType = 'oauth'
+  } else {
+    form.addType = 'apikey'
   }
 })
 
@@ -1336,23 +1403,26 @@ function getTypeColor(type) {
 
 .platform-groups {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
 }
 
 .platform-group-card {
   position: relative;
-  padding: 16px;
+  padding: 12px;
   border: 2px solid #e5e7eb;
-  border-radius: 12px;
+  border-radius: 10px;
   cursor: pointer;
   transition: all 0.2s ease;
   background: white;
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
 .platform-group-card:hover {
   border-color: #3b82f6;
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+  box-shadow: 0 3px 10px rgba(59, 130, 246, 0.12);
 }
 
 .platform-group-card.selected {
@@ -1361,43 +1431,45 @@ function getTypeColor(type) {
 }
 
 .card-icon {
-  width: 48px;
-  height: 48px;
-  border-radius: 12px;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
   color: white;
-  font-size: 20px;
-  margin-bottom: 12px;
+  font-size: 16px;
+  flex-shrink: 0;
 }
 
 .card-info h5 {
-  margin: 0 0 4px;
-  font-size: 15px;
+  margin: 0;
+  font-size: 13px;
   font-weight: 600;
   color: #1f2937;
+  line-height: 1.3;
 }
 
 .card-info p {
   margin: 0;
-  font-size: 12px;
+  font-size: 11px;
   color: #6b7280;
+  line-height: 1.2;
 }
 
 .check-mark {
   position: absolute;
-  top: 10px;
-  right: 10px;
-  width: 24px;
-  height: 24px;
+  top: 6px;
+  right: 6px;
+  width: 20px;
+  height: 20px;
   border-radius: 50%;
   background: #3b82f6;
   color: white;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 12px;
+  font-size: 10px;
 }
 
 .check-mark.small {

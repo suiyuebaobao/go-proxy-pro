@@ -1,9 +1,10 @@
 /*
  * 文件作用：套餐数据模型，定义套餐模板和用户套餐结构
  * 负责功能：
- *   - 套餐模板定义（订阅/额度）
+ *   - 套餐模板定义（订阅/额度/按次）
  *   - 用户套餐分配
  *   - 额度限制配置
+ *   - 按次计量配置
  *   - 模型访问权限
  * 重要程度：⭐⭐⭐ 一般（套餐数据结构）
  * 依赖模块：gorm
@@ -21,7 +22,7 @@ import (
 type Package struct {
 	ID          uint           `gorm:"primarykey" json:"id"`
 	Name        string         `gorm:"size:100;not null" json:"name"`                       // 套餐名称
-	Type        string         `gorm:"size:20;not null;index" json:"type"`                  // subscription(订阅包月) / quota(额度)
+	Type        string         `gorm:"size:20;not null;index" json:"type"`                  // subscription(订阅包月) / quota(额度) / count(按次)
 	Price       float64        `gorm:"type:decimal(10,2);default:0" json:"price"`           // 价格（美元）
 	Duration    int            `gorm:"default:30" json:"duration"`                          // 有效期天数
 
@@ -32,6 +33,9 @@ type Package struct {
 
 	// 额度类型的总额度
 	QuotaAmount float64        `gorm:"type:decimal(10,4);default:0" json:"quota_amount"`    // 总额度（额度类型使用，美元）
+
+	// 按次类型的总次数
+	CountAmount int64          `gorm:"default:0" json:"count_amount"`                       // 总请求次数（按次类型使用）
 
 	// 模型限制
 	AllowedModels string       `gorm:"type:text" json:"allowed_models"`                     // 允许的模型（逗号分隔，空=全部）
@@ -54,7 +58,7 @@ type UserPackage struct {
 	PackageID    uint           `gorm:"index;not null" json:"package_id"`
 	Package      *Package       `gorm:"foreignKey:PackageID" json:"package,omitempty"`
 	Name         string         `gorm:"size:100;not null" json:"name"`                    // 套餐名称（冗余存储）
-	Type         string         `gorm:"size:20;not null;index" json:"type"`               // subscription / quota
+	Type         string         `gorm:"size:20;not null;index" json:"type"`               // subscription / quota / count
 	Status       string         `gorm:"size:20;default:active;index" json:"status"`       // active/expired/exhausted/disabled
 
 	// 时间相关
@@ -78,6 +82,10 @@ type UserPackage struct {
 	QuotaTotal   float64        `gorm:"type:decimal(10,4);default:0" json:"quota_total"`  // 总额度（美元）
 	QuotaUsed    float64        `gorm:"type:decimal(10,4);default:0" json:"quota_used"`   // 已用额度（美元）
 
+	// 按次类型字段
+	CountTotal   int64          `gorm:"default:0" json:"count_total"`                     // 总请求次数
+	CountUsed    int64          `gorm:"default:0" json:"count_used"`                      // 已用请求次数
+
 	// 模型限制
 	AllowedModels string        `gorm:"type:text" json:"allowed_models"`                  // 允许的模型（逗号分隔）
 
@@ -96,6 +104,14 @@ func (up *UserPackage) QuotaRemaining() float64 {
 		return 0
 	}
 	return up.QuotaTotal - up.QuotaUsed
+}
+
+// CountRemaining 剩余次数（仅按次类型）
+func (up *UserPackage) CountRemaining() int64 {
+	if up.Type != "count" {
+		return 0
+	}
+	return up.CountTotal - up.CountUsed
 }
 
 // ResetPeriodUsageIfNeeded 如果需要，重置周期使用量
@@ -141,7 +157,7 @@ func padWeek(week int) string {
 	return fmt.Sprintf("%02d", week)
 }
 
-// CanUse 检查是否可以使用指定金额
+// CanUse 检查是否可以使用指定金额（按次类型 amount 参数被忽略）
 func (up *UserPackage) CanUse(amount float64) bool {
 	if up.Status != "active" {
 		return false
@@ -152,8 +168,8 @@ func (up *UserPackage) CanUse(amount float64) bool {
 		return false
 	}
 
-	if up.Type == "subscription" {
-		// 订阅类型检查周期限额
+	switch up.Type {
+	case "subscription":
 		if up.DailyQuota > 0 && up.DailyUsed+amount > up.DailyQuota {
 			return false
 		}
@@ -164,22 +180,26 @@ func (up *UserPackage) CanUse(amount float64) bool {
 			return false
 		}
 		return true
-	} else if up.Type == "quota" {
-		// 额度类型检查总额度
+	case "quota":
 		return up.QuotaUsed+amount <= up.QuotaTotal
+	case "count":
+		return up.CountUsed < up.CountTotal
 	}
 
 	return false
 }
 
-// RecordUsage 记录使用量
+// RecordUsage 记录使用量（按次类型 amount 参数被忽略，固定 +1）
 func (up *UserPackage) RecordUsage(amount float64) {
-	if up.Type == "subscription" {
+	switch up.Type {
+	case "subscription":
 		up.DailyUsed += amount
 		up.WeeklyUsed += amount
 		up.MonthlyUsed += amount
-	} else if up.Type == "quota" {
+	case "quota":
 		up.QuotaUsed += amount
+	case "count":
+		up.CountUsed++
 	}
 }
 
@@ -194,9 +214,13 @@ func (up *UserPackage) IsValid() bool {
 		return false
 	}
 
-	if up.Type == "quota" {
-		// 检查额度是否耗尽
+	switch up.Type {
+	case "quota":
 		if up.QuotaUsed >= up.QuotaTotal {
+			return false
+		}
+	case "count":
+		if up.CountUsed >= up.CountTotal {
 			return false
 		}
 	}

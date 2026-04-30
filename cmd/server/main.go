@@ -28,6 +28,7 @@ import (
 	"go-aiproxy/internal/handler"
 	"go-aiproxy/internal/middleware"
 	"go-aiproxy/internal/model"
+	"go-aiproxy/internal/proxy/scheduler"
 	"go-aiproxy/internal/repository"
 	"go-aiproxy/internal/service"
 	"go-aiproxy/pkg/logger"
@@ -173,6 +174,11 @@ func main() {
 	r.Use(middleware.CORS())
 	// 启用 Gzip 压缩（API 响应为主；静态资源使用预压缩 .gz 直出，避免 chunked 断流）
 	r.Use(gzip.Gzip(gzip.DefaultCompression, gzip.WithExcludedPaths([]string{"/v1", "/assets"})))
+
+	// 注册告警回调（解耦 scheduler -> service 的循环依赖）
+	scheduler.AlertCallback = func(conditionType, message string) {
+		service.GetAlertService().TriggerAlert(conditionType, message)
+	}
 
 	// 注册路由
 	handler.RegisterRoutes(r)

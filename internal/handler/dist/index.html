@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Go-AIProxy</title>
+  <title>叶渡AI Hub</title>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <script>
     ;(function () {
@@ -70,6 +70,7 @@
           var t = e && e.target
           if (t && (t.tagName === 'SCRIPT' || t.tagName === 'LINK')) return
           var msg = (e && e.message) || String(e)
+          if (msg && msg.indexOf('ResizeObserver') !== -1) return
           var src = (e && e.filename) || ''
           var line = (e && e.lineno) || ''
           var col = (e && e.colno) || ''
@@ -92,8 +93,8 @@
       )
     })()
   </script>
-  <script type="module" crossorigin src="/assets/index-C4cVtHYC.js"></script>
-  <link rel="stylesheet" crossorigin href="/assets/index-D-aEeZgA.css">
+  <script type="module" crossorigin src="/assets/index-BgPRS0ga.js"></script>
+  <link rel="stylesheet" crossorigin href="/assets/index-D1FVMY2H.css">
 </head>
 <body>
   <div id="app"></div>

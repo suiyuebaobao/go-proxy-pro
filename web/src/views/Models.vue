@@ -18,11 +18,9 @@
     <el-tabs v-model="activeTab" class="models-tabs">
       <el-tab-pane label="模型列表" name="models">
         <div class="tab-header">
-          <el-select v-model="filterPlatform" placeholder="筛选平台" clearable style="width: 150px; margin-right: 12px;">
+          <el-select v-model="filterPlatform" placeholder="筛选平台" clearable filterable style="width: 150px; margin-right: 12px;">
             <el-option label="全部" value="" />
-            <el-option label="Claude" value="claude" />
-            <el-option label="OpenAI" value="openai" />
-            <el-option label="Gemini" value="gemini" />
+            <el-option v-for="p in allPlatforms" :key="p.value" :label="p.label" :value="p.value" />
           </el-select>
           <el-button type="primary" @click="showAddDialog">
             <i class="fa-solid fa-plus"></i> 添加模型
@@ -101,7 +99,7 @@
           </el-table-column>
           <el-table-column label="" width="60" align="center">
             <template #default>
-              <i class="fa-solid fa-arrow-right" style="color: #909399;"></i>
+              <i class="fa-solid fa-arrow-right" style="color: #6b6573;"></i>
             </template>
           </el-table-column>
           <el-table-column prop="target_model" label="目标模型" min-width="200">
@@ -150,7 +148,7 @@
     </el-tabs>
 
     <!-- 添加/编辑模型对话框 -->
-    <el-dialog v-model="dialogVisible" :title="isEdit ? '编辑模型' : '添加模型'" width="600px">
+    <el-dialog v-model="dialogVisible" :title="isEdit ? '编辑模型' : '添加模型'" width="640px">
       <el-form :model="form" :rules="rules" ref="formRef" label-width="100px">
         <el-row :gutter="16">
           <el-col :span="12">
@@ -168,9 +166,7 @@
           <el-col :span="12">
             <el-form-item label="平台" prop="platform">
               <el-select v-model="form.platform" filterable allow-create placeholder="选择或输入平台" style="width: 100%">
-                <el-option label="Claude" value="claude" />
-                <el-option label="OpenAI" value="openai" />
-                <el-option label="Gemini" value="gemini" />
+                <el-option v-for="p in allPlatforms" :key="p.value" :label="p.label" :value="p.value" />
               </el-select>
               <div class="form-tip">决定使用哪个 API 处理请求</div>
             </el-form-item>
@@ -228,17 +224,17 @@
           <el-input v-model="form.description" type="textarea" :rows="2" />
         </el-form-item>
         <el-row :gutter="16">
-          <el-col :span="8">
+          <el-col :span="12">
             <el-form-item label="排序">
               <el-input-number v-model="form.sort_order" :min="0" style="width: 100%" />
             </el-form-item>
           </el-col>
-          <el-col :span="8">
+          <el-col :span="6">
             <el-form-item label="启用">
               <el-switch v-model="form.enabled" />
             </el-form-item>
           </el-col>
-          <el-col :span="8">
+          <el-col :span="6">
             <el-form-item label="默认">
               <el-switch v-model="form.is_default" />
             </el-form-item>
@@ -269,7 +265,7 @@
               :value="model.name"
             >
               <span>{{ model.name }}</span>
-              <span style="color: #909399; font-size: 12px; margin-left: 8px;">{{ model.display_name }}</span>
+              <span style="color: #6b6573; font-size: 12px; margin-left: 8px;">{{ model.display_name }}</span>
             </el-option>
           </el-select>
           <div class="form-tip">客户端请求时使用的模型名称（可输入自定义名称）</div>
@@ -288,7 +284,7 @@
               :value="model.name"
             >
               <span>{{ model.name }}</span>
-              <span style="color: #909399; font-size: 12px; margin-left: 8px;">{{ model.display_name }}</span>
+              <span style="color: #6b6573; font-size: 12px; margin-left: 8px;">{{ model.display_name }}</span>
             </el-option>
           </el-select>
           <div class="form-tip">实际发送到上游的模型名称</div>
@@ -322,6 +318,27 @@ import api from '@/api'
 
 // ========== 公共状态 ==========
 const activeTab = ref('models')
+
+const allPlatforms = [
+  { label: 'Claude', value: 'claude' },
+  { label: 'OpenAI', value: 'openai' },
+  { label: 'Gemini', value: 'gemini' },
+  { label: 'DeepSeek', value: 'deepseek' },
+  { label: '通义千问', value: 'qwen' },
+  { label: '智谱 GLM', value: 'glm' },
+  { label: 'Moonshot', value: 'moonshot' },
+  { label: '豆包', value: 'doubao' },
+  { label: '百川', value: 'baichuan' },
+  { label: '零一万物', value: 'yi' },
+  { label: 'MiniMax', value: 'minimax' },
+  { label: '阶跃星辰', value: 'stepfun' },
+  { label: '讯飞星火', value: 'spark' },
+  { label: 'xAI', value: 'xai' },
+  { label: 'Mistral', value: 'mistral' },
+  { label: 'Cohere', value: 'cohere' },
+  { label: '硅基流动', value: 'siliconflow' },
+  { label: '自定义', value: 'custom' },
+]
 
 // ========== 模型列表状态 ==========
 const loading = ref(false)
@@ -637,7 +654,7 @@ async function refreshMappingCache() {
 }
 
 .display-name {
-  color: #909399;
+  color: #6b6573;
   font-size: 12px;
   margin-top: 2px;
 }
@@ -646,12 +663,12 @@ async function refreshMappingCache() {
   display: flex;
   flex-direction: column;
   font-size: 12px;
-  color: #606266;
+  color: var(--el-text-color-regular);
 }
 
 .form-tip {
   font-size: 12px;
-  color: #909399;
+  color: #6b6573;
   margin-top: 4px;
 }
 
@@ -664,7 +681,7 @@ async function refreshMappingCache() {
 }
 
 .description {
-  color: #909399;
+  color: #6b6573;
   font-size: 13px;
 }
 
@@ -674,7 +691,7 @@ async function refreshMappingCache() {
 
 .stats-header {
   margin-bottom: 12px;
-  color: #606266;
+  color: var(--el-text-color-regular);
 }
 
 .stats-content {
@@ -688,7 +705,7 @@ async function refreshMappingCache() {
 }
 
 .no-mappings {
-  color: #909399;
+  color: #6b6573;
   font-size: 14px;
 }
 </style>

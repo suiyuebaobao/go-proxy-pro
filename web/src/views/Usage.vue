@@ -231,7 +231,7 @@ onMounted(() => {
 
 .page-header h2 {
   margin: 0;
-  color: #333;
+  color: var(--pink-text);
 }
 
 .stats-cards {

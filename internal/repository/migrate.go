@@ -40,6 +40,9 @@ func AutoMigrate() error {
 		&model.ErrorRule{},
 		// 模型映射
 		&model.ModelMapping{},
+		// 告警系统
+		&model.AlertRule{},
+		&model.AlertLog{},
 	)
 }
 
@@ -54,7 +57,7 @@ func InitDefaultAdmin() error {
 
 	admin := &model.User{
 		Username: "admin",
-		Email:    "admin@aiproxy.local",
+		Email:    "admin@fuye.local",
 		Role:     "admin",
 		Status:   "active",
 	}

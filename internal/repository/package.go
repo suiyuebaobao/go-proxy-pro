@@ -128,28 +128,47 @@ func (r *UserPackageRepository) ExpireSubscriptions() (int64, error) {
 	return result.RowsAffected, result.Error
 }
 
-// ExhaustQuotas 将额度耗尽的套餐标记为已耗尽
+// ExhaustQuotas 将额度耗尽的套餐标记为已耗尽（含额度类型和按次类型）
 func (r *UserPackageRepository) ExhaustQuotas() (int64, error) {
-	result := r.db.Model(&model.UserPackage{}).
+	// 额度类型
+	r1 := r.db.Model(&model.UserPackage{}).
 		Where("type = ? AND status = ? AND quota_used >= quota_total", "quota", "active").
 		Update("status", "exhausted")
-	return result.RowsAffected, result.Error
+	// 按次类型
+	r2 := r.db.Model(&model.UserPackage{}).
+		Where("type = ? AND status = ? AND count_used >= count_total", "count", "active").
+		Update("status", "exhausted")
+	return r1.RowsAffected + r2.RowsAffected, firstErr(r1.Error, r2.Error)
+}
+
+func firstErr(errs ...error) error {
+	for _, e := range errs {
+		if e != nil {
+			return e
+		}
+	}
+	return nil
 }
 
 // IncrementUsage 增加套餐使用量（原子操作）
-// 对于订阅类型：增加 daily_used, weekly_used, monthly_used
-// 对于额度类型：增加 quota_used
+// 对于订阅类型：增加 daily_used, weekly_used, monthly_used（金额）
+// 对于额度类型：增加 quota_used（金额）
+// 对于按次类型：count_used + 1（忽略 amount 参数）
 func (r *UserPackageRepository) IncrementUsage(id uint, pkgType string, amount float64) error {
-	if pkgType == "subscription" {
+	switch pkgType {
+	case "subscription":
 		return r.db.Model(&model.UserPackage{}).Where("id = ?", id).
 			Updates(map[string]interface{}{
 				"daily_used":   gorm.Expr("daily_used + ?", amount),
 				"weekly_used":  gorm.Expr("weekly_used + ?", amount),
 				"monthly_used": gorm.Expr("monthly_used + ?", amount),
 			}).Error
-	} else if pkgType == "quota" {
+	case "quota":
 		return r.db.Model(&model.UserPackage{}).Where("id = ?", id).
 			Update("quota_used", gorm.Expr("quota_used + ?", amount)).Error
+	case "count":
+		return r.db.Model(&model.UserPackage{}).Where("id = ?", id).
+			Update("count_used", gorm.Expr("count_used + 1")).Error
 	}
 	return nil
 }

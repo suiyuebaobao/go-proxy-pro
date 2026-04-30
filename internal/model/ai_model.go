@@ -82,4 +82,70 @@ var DefaultModels = []AIModel{
 
 	// Gemini 2.0 系列 (2024-2025)
 	{Name: "gemini-2.0-flash", DisplayName: "Gemini 2.0 Flash", Platform: "gemini", Provider: "google", Category: "chat", ContextSize: 1048576, MaxOutput: 8192, InputPrice: 0.1, OutputPrice: 0.4, Enabled: true, SortOrder: 23, Aliases: "gemini-2.0-flash-exp"},
+
+	// DeepSeek 系列
+	{Name: "deepseek-chat", DisplayName: "DeepSeek V3", Platform: "deepseek", Provider: "deepseek", Category: "chat", ContextSize: 65536, MaxOutput: 8192, InputPrice: 0.27, OutputPrice: 1.1, Enabled: true, SortOrder: 30, Aliases: "deepseek-v3"},
+	{Name: "deepseek-reasoner", DisplayName: "DeepSeek R1", Platform: "deepseek", Provider: "deepseek", Category: "chat", ContextSize: 65536, MaxOutput: 8192, InputPrice: 0.55, OutputPrice: 2.19, Enabled: true, SortOrder: 31, Aliases: "deepseek-r1"},
+	{Name: "deepseek-coder", DisplayName: "DeepSeek Coder", Platform: "deepseek", Provider: "deepseek", Category: "chat", ContextSize: 65536, MaxOutput: 8192, InputPrice: 0.14, OutputPrice: 0.28, Enabled: true, SortOrder: 32},
+
+	// 通义千问 系列
+	{Name: "qwen-max", DisplayName: "Qwen Max", Platform: "qwen", Provider: "alibaba", Category: "chat", ContextSize: 32768, MaxOutput: 8192, InputPrice: 2.4, OutputPrice: 9.6, Enabled: true, SortOrder: 40},
+	{Name: "qwen-plus", DisplayName: "Qwen Plus", Platform: "qwen", Provider: "alibaba", Category: "chat", ContextSize: 131072, MaxOutput: 8192, InputPrice: 0.8, OutputPrice: 2.0, Enabled: true, SortOrder: 41},
+	{Name: "qwen-turbo", DisplayName: "Qwen Turbo", Platform: "qwen", Provider: "alibaba", Category: "chat", ContextSize: 131072, MaxOutput: 8192, InputPrice: 0.3, OutputPrice: 0.6, Enabled: true, SortOrder: 42},
+	{Name: "qwen-long", DisplayName: "Qwen Long", Platform: "qwen", Provider: "alibaba", Category: "chat", ContextSize: 1000000, MaxOutput: 8192, InputPrice: 0.5, OutputPrice: 2.0, Enabled: true, SortOrder: 43},
+
+	// 智谱 GLM 系列
+	{Name: "glm-4-plus", DisplayName: "GLM-4 Plus", Platform: "glm", Provider: "zhipu", Category: "chat", ContextSize: 128000, MaxOutput: 4096, InputPrice: 5.0, OutputPrice: 5.0, Enabled: true, SortOrder: 50},
+	{Name: "glm-4", DisplayName: "GLM-4", Platform: "glm", Provider: "zhipu", Category: "chat", ContextSize: 128000, MaxOutput: 4096, InputPrice: 10.0, OutputPrice: 10.0, Enabled: true, SortOrder: 51},
+	{Name: "glm-4-flash", DisplayName: "GLM-4 Flash", Platform: "glm", Provider: "zhipu", Category: "chat", ContextSize: 128000, MaxOutput: 4096, InputPrice: 0.1, OutputPrice: 0.1, Enabled: true, SortOrder: 52},
+
+	// Kimi (月之暗面) 系列
+	{Name: "moonshot-v1-128k", DisplayName: "Kimi 128K", Platform: "moonshot", Provider: "moonshot", Category: "chat", ContextSize: 128000, MaxOutput: 8192, InputPrice: 6.0, OutputPrice: 6.0, Enabled: true, SortOrder: 60, Aliases: "kimi-128k"},
+	{Name: "moonshot-v1-32k", DisplayName: "Kimi 32K", Platform: "moonshot", Provider: "moonshot", Category: "chat", ContextSize: 32000, MaxOutput: 8192, InputPrice: 2.4, OutputPrice: 2.4, Enabled: true, SortOrder: 61, Aliases: "kimi-32k"},
+	{Name: "moonshot-v1-8k", DisplayName: "Kimi 8K", Platform: "moonshot", Provider: "moonshot", Category: "chat", ContextSize: 8000, MaxOutput: 4096, InputPrice: 1.2, OutputPrice: 1.2, Enabled: true, SortOrder: 62, Aliases: "kimi-8k"},
+
+	// 豆包 (字节) 系列
+	{Name: "doubao-pro-128k", DisplayName: "豆包 Pro 128K", Platform: "doubao", Provider: "bytedance", Category: "chat", ContextSize: 128000, MaxOutput: 4096, InputPrice: 5.0, OutputPrice: 9.0, Enabled: true, SortOrder: 70},
+	{Name: "doubao-pro-32k", DisplayName: "豆包 Pro 32K", Platform: "doubao", Provider: "bytedance", Category: "chat", ContextSize: 32000, MaxOutput: 4096, InputPrice: 0.8, OutputPrice: 2.0, Enabled: true, SortOrder: 71},
+	{Name: "doubao-lite-128k", DisplayName: "豆包 Lite 128K", Platform: "doubao", Provider: "bytedance", Category: "chat", ContextSize: 128000, MaxOutput: 4096, InputPrice: 0.8, OutputPrice: 1.0, Enabled: true, SortOrder: 72},
+
+	// 百川智能 系列
+	{Name: "baichuan4", DisplayName: "Baichuan 4", Platform: "baichuan", Provider: "baichuan", Category: "chat", ContextSize: 32768, MaxOutput: 4096, InputPrice: 10.0, OutputPrice: 10.0, Enabled: true, SortOrder: 80},
+	{Name: "baichuan3-turbo", DisplayName: "Baichuan 3 Turbo", Platform: "baichuan", Provider: "baichuan", Category: "chat", ContextSize: 32768, MaxOutput: 4096, InputPrice: 1.2, OutputPrice: 1.2, Enabled: true, SortOrder: 81},
+
+	// 零一万物 Yi 系列
+	{Name: "yi-large", DisplayName: "Yi Large", Platform: "yi", Provider: "lingyiwanwu", Category: "chat", ContextSize: 32768, MaxOutput: 4096, InputPrice: 2.0, OutputPrice: 2.0, Enabled: true, SortOrder: 85},
+	{Name: "yi-medium", DisplayName: "Yi Medium", Platform: "yi", Provider: "lingyiwanwu", Category: "chat", ContextSize: 16384, MaxOutput: 4096, InputPrice: 0.25, OutputPrice: 0.25, Enabled: true, SortOrder: 86},
+
+	// MiniMax 系列
+	{Name: "abab6.5s-chat", DisplayName: "MiniMax abab6.5s", Platform: "minimax", Provider: "minimax", Category: "chat", ContextSize: 245760, MaxOutput: 8192, InputPrice: 1.0, OutputPrice: 1.0, Enabled: true, SortOrder: 90},
+
+	// 阶跃星辰 Step 系列
+	{Name: "step-2-16k", DisplayName: "Step-2 16K", Platform: "stepfun", Provider: "stepfun", Category: "chat", ContextSize: 16384, MaxOutput: 4096, InputPrice: 3.8, OutputPrice: 3.8, Enabled: true, SortOrder: 95},
+	{Name: "step-1-128k", DisplayName: "Step-1 128K", Platform: "stepfun", Provider: "stepfun", Category: "chat", ContextSize: 128000, MaxOutput: 4096, InputPrice: 4.0, OutputPrice: 4.0, Enabled: true, SortOrder: 96},
+
+	// 讯飞星火 Spark 系列
+	{Name: "spark-max", DisplayName: "星火 Max", Platform: "spark", Provider: "iflytek", Category: "chat", ContextSize: 128000, MaxOutput: 8192, InputPrice: 3.0, OutputPrice: 3.0, Enabled: true, SortOrder: 100},
+	{Name: "spark-pro", DisplayName: "星火 Pro", Platform: "spark", Provider: "iflytek", Category: "chat", ContextSize: 128000, MaxOutput: 8192, InputPrice: 2.1, OutputPrice: 2.1, Enabled: true, SortOrder: 101},
+	{Name: "spark-lite", DisplayName: "星火 Lite", Platform: "spark", Provider: "iflytek", Category: "chat", ContextSize: 4000, MaxOutput: 4096, InputPrice: 0.0, OutputPrice: 0.0, Enabled: true, SortOrder: 102},
+
+	// 硅基流动 SiliconFlow 系列
+	{Name: "deepseek-ai/DeepSeek-V3", DisplayName: "DeepSeek V3 (硅基)", Platform: "siliconflow", Provider: "siliconflow", Category: "chat", ContextSize: 65536, MaxOutput: 8192, InputPrice: 0.14, OutputPrice: 0.28, Enabled: true, SortOrder: 105},
+	{Name: "deepseek-ai/DeepSeek-R1", DisplayName: "DeepSeek R1 (硅基)", Platform: "siliconflow", Provider: "siliconflow", Category: "chat", ContextSize: 65536, MaxOutput: 8192, InputPrice: 0.28, OutputPrice: 1.1, Enabled: true, SortOrder: 106},
+	{Name: "Qwen/Qwen2.5-72B-Instruct", DisplayName: "Qwen 2.5 72B (硅基)", Platform: "siliconflow", Provider: "siliconflow", Category: "chat", ContextSize: 32768, MaxOutput: 8192, InputPrice: 0.56, OutputPrice: 0.56, Enabled: true, SortOrder: 107},
+	{Name: "Pro/Qwen/Qwen2.5-7B-Instruct", DisplayName: "Qwen 2.5 7B (硅基)", Platform: "siliconflow", Provider: "siliconflow", Category: "chat", ContextSize: 32768, MaxOutput: 8192, InputPrice: 0.0, OutputPrice: 0.0, Enabled: true, SortOrder: 108},
+
+	// xAI (Grok) 系列
+	{Name: "grok-3", DisplayName: "Grok 3", Platform: "xai", Provider: "xai", Category: "chat", ContextSize: 131072, MaxOutput: 16384, InputPrice: 3.0, OutputPrice: 15.0, Enabled: true, SortOrder: 110},
+	{Name: "grok-3-mini", DisplayName: "Grok 3 Mini", Platform: "xai", Provider: "xai", Category: "chat", ContextSize: 131072, MaxOutput: 16384, InputPrice: 0.3, OutputPrice: 0.5, Enabled: true, SortOrder: 111},
+	{Name: "grok-2", DisplayName: "Grok 2", Platform: "xai", Provider: "xai", Category: "chat", ContextSize: 131072, MaxOutput: 16384, InputPrice: 2.0, OutputPrice: 10.0, Enabled: true, SortOrder: 112},
+
+	// Mistral AI 系列
+	{Name: "mistral-large-latest", DisplayName: "Mistral Large", Platform: "mistral", Provider: "mistral", Category: "chat", ContextSize: 128000, MaxOutput: 8192, InputPrice: 2.0, OutputPrice: 6.0, Enabled: true, SortOrder: 120, Aliases: "mistral-large"},
+	{Name: "mistral-medium-latest", DisplayName: "Mistral Medium", Platform: "mistral", Provider: "mistral", Category: "chat", ContextSize: 128000, MaxOutput: 8192, InputPrice: 2.7, OutputPrice: 8.1, Enabled: true, SortOrder: 121, Aliases: "mistral-medium"},
+	{Name: "mistral-small-latest", DisplayName: "Mistral Small", Platform: "mistral", Provider: "mistral", Category: "chat", ContextSize: 128000, MaxOutput: 8192, InputPrice: 0.2, OutputPrice: 0.6, Enabled: true, SortOrder: 122, Aliases: "mistral-small"},
+
+	// Cohere 系列
+	{Name: "command-r-plus", DisplayName: "Command R+", Platform: "cohere", Provider: "cohere", Category: "chat", ContextSize: 128000, MaxOutput: 4096, InputPrice: 2.5, OutputPrice: 10.0, Enabled: true, SortOrder: 130},
+	{Name: "command-r", DisplayName: "Command R", Platform: "cohere", Provider: "cohere", Category: "chat", ContextSize: 128000, MaxOutput: 4096, InputPrice: 0.15, OutputPrice: 0.6, Enabled: true, SortOrder: 131},
 }

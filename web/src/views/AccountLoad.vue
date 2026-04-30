@@ -21,7 +21,7 @@
     <el-card class="filter-card">
       <el-form :inline="true">
         <el-form-item label="时间范围">
-          <el-select v-model="timeRange" @change="handleTimeRangeChange">
+          <el-select v-model="timeRange" @change="handleTimeRangeChange" style="width: 160px">
             <el-option label="最近1小时" value="1h" />
             <el-option label="最近24小时" value="24h" />
             <el-option label="最近7天" value="7d" />
@@ -221,7 +221,7 @@ onMounted(() => {
 }
 
 .page-header h2 {
-  color: #333;
+  color: var(--pink-text);
   margin: 0;
 }
 
@@ -230,7 +230,7 @@ onMounted(() => {
 }
 
 .filter-card :deep(.el-card__body) {
-  padding-bottom: 2px;
+  padding: 16px 20px 4px;
 }
 
 .request-count .total {
@@ -240,7 +240,7 @@ onMounted(() => {
 
 .request-count .detail {
   font-size: 12px;
-  color: #909399;
+  color: #6b6573;
 }
 
 .request-count .success {

@@ -149,7 +149,7 @@ func (a *AzureOpenAIAdapter) SendStream(ctx context.Context, account *model.Acco
 	log.Debug("Azure OpenAI Stream 请求开始 - URL: %s, AccountID: %d, Deployment: %s",
 		url, account.ID, account.AzureDeploymentName)
 
-	client := GetHTTPClient(account)
+	client := GetStreamHTTPClient(account)
 	resp, err := client.Do(httpReq)
 	if err != nil {
 		log.Error("Azure OpenAI Stream 请求失败 - 网络错误: %v", err)

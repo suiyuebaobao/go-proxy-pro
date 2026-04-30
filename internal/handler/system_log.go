@@ -392,25 +392,26 @@ func (h *SystemLogHandler) ReadFile(c *gin.Context) {
 	}
 	defer file.Close()
 
+	const maxLines = 50000 // 最多加载 5 万行，防止内存溢出
 	var allLines []string
 	scanner := bufio.NewScanner(file)
-	// 增加缓冲区大小以处理长行
 	buf := make([]byte, 0, 64*1024)
 	scanner.Buffer(buf, 1024*1024)
 
-	lineNum := 0
+	keywordLower := strings.ToLower(keyword)
 	for scanner.Scan() {
-		lineNum++
 		line := scanner.Text()
 
-		// 关键词过滤
 		if keyword != "" {
-			if !strings.Contains(strings.ToLower(line), strings.ToLower(keyword)) {
+			if !strings.Contains(strings.ToLower(line), keywordLower) {
 				continue
 			}
 		}
 
 		allLines = append(allLines, line)
+		if len(allLines) >= maxLines {
+			break
+		}
 	}
 
 	totalLines := len(allLines)
@@ -640,7 +641,7 @@ func formatFileSize(size int64) string {
 	}
 }
 
-// 读取文件最后 N 行
+// tailFile 从文件尾部高效读取最后 N 行（避免全量加载）
 func tailFile(filePath string, n int) ([]string, error) {
 	file, err := os.Open(filePath)
 	if err != nil {
@@ -648,18 +649,67 @@ func tailFile(filePath string, n int) ([]string, error) {
 	}
 	defer file.Close()
 
+	stat, err := file.Stat()
+	if err != nil {
+		return nil, err
+	}
+
+	fileSize := stat.Size()
+	if fileSize == 0 {
+		return nil, nil
+	}
+
+	// 从文件尾部向前读取，每次读 8KB 块
+	const chunkSize = 8192
 	var lines []string
-	scanner := bufio.NewScanner(file)
-	buf := make([]byte, 0, 64*1024)
-	scanner.Buffer(buf, 1024*1024)
+	remaining := fileSize
+	var partialLine string
 
-	for scanner.Scan() {
-		lines = append(lines, scanner.Text())
+	for remaining > 0 && len(lines) < n {
+		readSize := int64(chunkSize)
+		if readSize > remaining {
+			readSize = remaining
+		}
+		offset := remaining - readSize
+		remaining = offset
+
+		buf := make([]byte, readSize)
+		_, err := file.ReadAt(buf, offset)
+		if err != nil {
+			return nil, err
+		}
+
+		chunk := string(buf) + partialLine
+		partialLine = ""
+
+		chunkLines := strings.Split(chunk, "\n")
+		// 第一个元素可能是部分行（跨块边界）
+		if offset > 0 {
+			partialLine = chunkLines[0]
+			chunkLines = chunkLines[1:]
+		}
+
+		// 从后向前收集行
+		for i := len(chunkLines) - 1; i >= 0; i-- {
+			line := chunkLines[i]
+			if line == "" && i == len(chunkLines)-1 {
+				continue // 跳过末尾空行
+			}
+			lines = append([]string{line}, lines...)
+			if len(lines) >= n {
+				break
+			}
+		}
 	}
 
-	if len(lines) <= n {
-		return lines, nil
+	// 如果还有剩余的部分行（文件第一行）
+	if partialLine != "" && len(lines) < n {
+		lines = append([]string{partialLine}, lines...)
 	}
 
-	return lines[len(lines)-n:], nil
+	if len(lines) > n {
+		lines = lines[len(lines)-n:]
+	}
+
+	return lines, nil
 }

@@ -49,6 +49,7 @@ var (
 	mu            sync.RWMutex
 	logDir        string
 	globalLevel   zap.AtomicLevel
+	initialized   bool
 )
 
 // Init 初始化日志系统
@@ -59,6 +60,7 @@ func Init(dir string, level int) error {
 
 	logDir = dir
 	globalLevel = zap.NewAtomicLevelAt(intToZapLevel(level))
+	initialized = true
 
 	var err error
 	defaultLogger, err = newLogger("main")
@@ -121,6 +123,10 @@ func newLogger(module string) (*Logger, error) {
 
 // GetLogger 获取指定模块的日志器
 func GetLogger(module string) *Logger {
+	if !initialized {
+		return nil
+	}
+
 	mu.RLock()
 	if l, ok := loggers[module]; ok {
 		mu.RUnlock()

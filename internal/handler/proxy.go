@@ -25,6 +25,7 @@ import (
 	"strings"
 	"time"
 
+	"go-aiproxy/internal/middleware"
 	"go-aiproxy/internal/model"
 	"go-aiproxy/internal/proxy/adapter"
 	"go-aiproxy/internal/proxy/scheduler"
@@ -91,39 +92,33 @@ func (rw *RateWriter) Flush() {
 	}
 }
 
+// tokenFieldPatterns 预编译的正则表达式，用于匹配 SSE 数据块中的 token 字段
+var tokenFieldPatterns = func() map[string]*regexp.Regexp {
+	fields := []string{
+		"prompt_tokens", "completion_tokens", "total_tokens", "cached_tokens",
+		"input_tokens", "output_tokens", "cache_creation_input_tokens", "cache_read_input_tokens",
+		"promptTokenCount", "candidatesTokenCount", "totalTokenCount",
+	}
+	patterns := make(map[string]*regexp.Regexp, len(fields))
+	for _, field := range fields {
+		patterns[field] = regexp.MustCompile(`"` + field + `"\s*:\s*(\d+)`)
+	}
+	return patterns
+}()
+
 // applyRateToSSEChunk 将倍率应用到 SSE 数据块中的 token 字段
 func applyRateToSSEChunk(chunk []byte, rate float64) []byte {
 	content := string(chunk)
 
-	// 匹配所有 token 相关的字段并乘以倍率
-	// 包括 OpenAI、Claude 和 Gemini 的字段名
-	tokenFields := []string{
-		// OpenAI 格式
-		"prompt_tokens",
-		"completion_tokens",
-		"total_tokens",
-		"cached_tokens",
-		// Claude 格式
-		"input_tokens",
-		"output_tokens",
-		"cache_creation_input_tokens",
-		"cache_read_input_tokens",
-		// Gemini 格式
-		"promptTokenCount",
-		"candidatesTokenCount",
-		"totalTokenCount",
-	}
-
-	for _, field := range tokenFields {
-		// 匹配 "field": 数字 或 "field":数字
-		pattern := regexp.MustCompile(`"` + field + `"\s*:\s*(\d+)`)
+	for _, pattern := range tokenFieldPatterns {
 		content = pattern.ReplaceAllStringFunc(content, func(match string) string {
-			// 提取数字
-			numPattern := regexp.MustCompile(`(\d+)`)
-			numStr := numPattern.FindString(match)
-			if num, err := strconv.Atoi(numStr); err == nil {
+			sub := pattern.FindStringSubmatch(match)
+			if len(sub) < 2 {
+				return match
+			}
+			if num, err := strconv.Atoi(sub[1]); err == nil {
 				newNum := int(float64(num) * rate)
-				return strings.Replace(match, numStr, strconv.Itoa(newNum), 1)
+				return strings.Replace(match, sub[1], strconv.Itoa(newNum), 1)
 			}
 			return match
 		})
@@ -653,9 +648,16 @@ func (h *ProxyHandler) OpenAIChatCompletions(c *gin.Context) {
 	// 保存原始请求体到 context
 	c.Set("request_body", rawBody)
 
-	// 强制使用 OpenAI 平台（不自动检测）
-	accountType := "openai"
-	actualModel := scheduler.GetActualModel(req.Model) // 去掉可能的 "type," 前缀
+	// 检测账户类型：支持 "type,model" 格式显式指定，或从模型名自动推断平台
+	actualModel := scheduler.GetActualModel(req.Model)
+	accountType := scheduler.DetectAccountType(req.Model)
+	if accountType == "" {
+		if platform := scheduler.DetectPlatform(actualModel); platform != "" && model.IsOpenAICompatibleType(platform) {
+			accountType = platform
+		} else {
+			accountType = "openai"
+		}
+	}
 
 	// 使用原始模型名（不再做全局模型映射，只在账号级别映射）
 	req.Model = actualModel
@@ -737,7 +739,7 @@ func (h *ProxyHandler) GeminiChat(c *gin.Context) {
 }
 
 func (h *ProxyHandler) handleGeminiNonStream(c *gin.Context, req *adapter.Request, originalModel string) {
-	retryReq := h.createRetryRequest(c)
+	retryReq := h.createRetryRequest(c).WithOriginalModel(originalModel)
 
 	result, err := retryReq.ExecuteWithRetry(
 		c.Request.Context(),
@@ -858,7 +860,7 @@ func (h *ProxyHandler) handleGeminiStream(c *gin.Context, req *adapter.Request, 
 	// 使用 TailWriter 捕获末尾 2KB 响应（包装 RateWriter）
 	tailWriter := adapter.NewTailWriter(rateWriter, 2048)
 
-	retryReq := h.createRetryRequest(c)
+	retryReq := h.createRetryRequest(c).WithOriginalModel(originalModel)
 
 	result, err := retryReq.ExecuteStreamWithRetry(
 		c.Request.Context(),
@@ -1210,18 +1212,10 @@ func (h *ProxyHandler) recordUsage(c *gin.Context, modelName string, usage *adap
 			return
 		}
 
-		// 记录模型使用统计（使用倍率后的 token）
+		// 计算总 token（用于 API Key 和套餐统计）
 		totalTokens := int64(ratedInputTokens + ratedOutputTokens + ratedCacheCreationTokens + ratedCacheReadTokens)
-		if err := h.usageService.IncrementModelUsage(ctx, uid, modelName, totalTokens, costBreakdown.TotalCost); err != nil {
-			log.ErrorZ("记录模型使用统计失败",
-				logger.Uint("user_id", uid),
-				logger.String("model", modelName),
-				logger.Int64("total_tokens", totalTokens),
-				logger.Err(err),
-			)
-		}
 
-		// 记录账户费用到 Redis
+		// 记录账户费用到 MySQL
 		if accountID > 0 {
 			if err := h.usageService.IncrementAccountCost(ctx, accountID, costBreakdown.TotalCost); err != nil {
 				log.ErrorZ("记录账户费用失败",
@@ -1230,28 +1224,6 @@ func (h *ProxyHandler) recordUsage(c *gin.Context, modelName string, usage *adap
 					logger.Err(err),
 				)
 			}
-		}
-
-		// 增量更新 MySQL 每日汇总（使用倍率后的 token）
-		dailyUsage := &model.DailyUsage{
-			RequestCount:             1,
-			InputTokens:              int64(ratedInputTokens),
-			OutputTokens:             int64(ratedOutputTokens),
-			CacheCreationInputTokens: int64(ratedCacheCreationTokens),
-			CacheReadInputTokens:     int64(ratedCacheReadTokens),
-			TotalTokens:              totalTokens,
-			InputCost:                costBreakdown.InputCost,
-			OutputCost:               costBreakdown.OutputCost,
-			CacheCreateCost:          costBreakdown.CacheCreateCost,
-			CacheReadCost:            costBreakdown.CacheReadCost,
-			TotalCost:                costBreakdown.TotalCost,
-		}
-		if err := h.dailyUsageRepo.IncrementUsage(uid, modelName, dailyUsage); err != nil {
-			log.ErrorZ("更新每日汇总失败",
-				logger.Uint("user_id", uid),
-				logger.String("model", modelName),
-				logger.Err(err),
-			)
 		}
 
 		// 更新 API Key 使用统计（MySQL）
@@ -1268,15 +1240,13 @@ func (h *ProxyHandler) recordUsage(c *gin.Context, modelName string, usage *adap
 
 		// 更新绑定的套餐使用量（只扣绑定的套餐）
 		if pkgID > 0 {
-			// 获取套餐信息用于惰性重置检查
 			userPackage, err := h.userPackageRepo.GetByID(pkgID)
 			if err == nil && userPackage != nil {
-				// 先检查周期是否需要重置（惰性重置）
+				// 先检查周期是否需要重置（惰性重置，仅订阅类型）
 				if userPackage.ResetPeriodUsageIfNeeded() {
-					// 如果重置了，需要先保存重置后的状态
 					h.userPackageRepo.Update(userPackage)
 				}
-				// 增加使用量
+				// 增加使用量：按次类型固定 +1，其他类型按费用扣减
 				if err := h.userPackageRepo.IncrementUsage(pkgID, pkgType, costBreakdown.TotalCost); err != nil {
 					log.ErrorZ("更新用户套餐使用量失败",
 						logger.Uint("user_id", uid),
@@ -1286,6 +1256,7 @@ func (h *ProxyHandler) recordUsage(c *gin.Context, modelName string, usage *adap
 						logger.Err(err),
 					)
 				}
+				middleware.InvalidateQuotaCache(pkgID)
 			}
 		}
 

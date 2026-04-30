@@ -200,7 +200,7 @@ const fetchRecords = async () => {
       params.model = filters.model
     }
 
-    const res = await api.getUserUsageRecords(params)
+    const res = await api.getMyUsageRecords(params)
     if (res.data) {
       records.value = res.data.items || []
       pagination.total = res.data.total || 0
@@ -214,7 +214,7 @@ const fetchRecords = async () => {
 
 const fetchSummary = async () => {
   try {
-    const res = await api.getUserUsageSummary()
+    const res = await api.getMyUsageSummary()
     if (res.data) {
       summary.total_cost = res.data.total?.total_cost || 0
       summary.total_tokens = res.data.total?.total_tokens || 0
@@ -228,9 +228,10 @@ const fetchSummary = async () => {
 
 const fetchModels = async () => {
   try {
-    const res = await api.getUserModelStats()
-    if (res.data) {
-      models.value = res.data.map(m => m.model).filter(Boolean)
+    const res = await api.getMyModelStats()
+    const list = res.data?.models || res.data || []
+    if (Array.isArray(list)) {
+      models.value = list.map(m => m.model).filter(Boolean)
     }
   } catch (e) {
     console.error('Failed to fetch models:', e)
@@ -266,7 +267,7 @@ onMounted(() => {
 
 .page-header h2 {
   margin: 0;
-  color: #303133;
+  color: var(--pink-text);
 }
 
 .filter-card {
@@ -289,12 +290,12 @@ onMounted(() => {
 .summary-value {
   font-size: 24px;
   font-weight: bold;
-  color: #409eff;
+  color: var(--pink-accent, #c97b8b);
 }
 
 .summary-label {
   font-size: 14px;
-  color: #909399;
+  color: #6b6573;
   margin-top: 8px;
 }
 

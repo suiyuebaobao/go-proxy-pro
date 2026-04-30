@@ -541,7 +541,7 @@ func (a *ClaudeAdapter) setHeaders(httpReq *http.Request, account *model.Account
 		httpReq.Header.Set("Content-Type", "application/json")
 	}
 	if httpReq.Header.Get("anthropic-version") == "" {
-		httpReq.Header.Set("anthropic-version", "2023-06-01")
+		httpReq.Header.Set("anthropic-version", "2024-10-22")
 	}
 
 	// 3. 设置认证头（强制覆盖）

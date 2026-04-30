@@ -132,9 +132,11 @@ func (h *UserHandler) UpdateProfile(c *gin.Context) {
 		return
 	}
 
-	// 普通用户不能修改 role 和 status
+	// 普通用户只能修改 email，不能修改 role、status、price_rate、max_concurrency
 	req.Role = ""
 	req.Status = ""
+	req.PriceRate = nil
+	req.MaxConcurrency = nil
 
 	user, err := h.service.Update(userID, &req)
 	if err != nil {
@@ -240,6 +242,12 @@ func (h *UserHandler) Delete(c *gin.Context) {
 	id, err := strconv.ParseUint(c.Param("id"), 10, 32)
 	if err != nil {
 		response.BadRequest(c, "invalid user id")
+		return
+	}
+
+	currentUserID := c.GetUint("user_id")
+	if uint(id) == currentUserID {
+		response.BadRequest(c, "不能删除当前登录的管理员账号")
 		return
 	}
 

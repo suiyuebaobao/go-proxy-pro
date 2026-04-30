@@ -432,34 +432,113 @@ const platformGroups = [
     key: 'claude',
     name: 'Claude',
     icon: 'fa-solid fa-brain',
-    gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+    gradient: '#c97b8b',
     types: ['claude-official', 'claude-console', 'bedrock']
   },
   {
     key: 'openai',
     name: 'OpenAI',
     icon: 'fa-solid fa-robot',
-    gradient: 'linear-gradient(135deg, #11998e 0%, #38ef7d 100%)',
+    gradient: '#a0c0b5',
     types: ['openai', 'openai-responses', 'azure-openai']
   },
   {
     key: 'gemini',
     name: 'Gemini',
     icon: 'fa-brands fa-google',
-    gradient: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
-    types: ['gemini']
+    gradient: '#b8a0c5',
+    types: ['gemini', 'gemini-api']
+  },
+  {
+    key: 'deepseek',
+    name: 'DeepSeek',
+    icon: 'fa-solid fa-microchip',
+    gradient: '#4a7fd4',
+    types: ['deepseek']
+  },
+  {
+    key: 'qwen',
+    name: '通义千问',
+    icon: 'fa-solid fa-cloud',
+    gradient: '#6236ff',
+    types: ['qwen']
+  },
+  {
+    key: 'glm',
+    name: '智谱GLM',
+    icon: 'fa-solid fa-atom',
+    gradient: '#3366cc',
+    types: ['glm']
+  },
+  {
+    key: 'moonshot',
+    name: 'Kimi',
+    icon: 'fa-solid fa-moon',
+    gradient: '#1a1a2e',
+    types: ['moonshot']
+  },
+  {
+    key: 'doubao',
+    name: '豆包',
+    icon: 'fa-solid fa-fire',
+    gradient: '#ff6a3d',
+    types: ['doubao']
+  },
+  {
+    key: 'siliconflow',
+    name: '硅基流动',
+    icon: 'fa-solid fa-microchip',
+    gradient: '#6366f1',
+    types: ['siliconflow']
+  },
+  {
+    key: 'xai',
+    name: 'xAI',
+    icon: 'fa-solid fa-bolt-lightning',
+    gradient: '#1da1f2',
+    types: ['xai']
+  },
+  {
+    key: 'other',
+    name: '更多',
+    icon: 'fa-solid fa-ellipsis',
+    gradient: '#8899aa',
+    types: ['mistral', 'cohere', 'baichuan', 'yi', 'minimax', 'stepfun', 'spark', 'custom', 'droid']
   }
 ]
 
 // 子类型定义
 const subtypeMap = {
-  'claude-official': { label: 'Claude Official', icon: 'fa-solid fa-key', color: '#667eea', platform: 'Claude' },
-  'claude-console': { label: 'Claude Console', icon: 'fa-solid fa-terminal', color: '#764ba2', platform: 'Claude' },
-  'bedrock': { label: 'AWS Bedrock', icon: 'fa-brands fa-aws', color: '#ff9900', platform: 'Claude' },
-  'openai': { label: 'OpenAI 三方 API', icon: 'fa-solid fa-bolt', color: '#11998e', platform: 'OpenAI' },
-  'openai-responses': { label: 'ChatGPT 官方', icon: 'fa-solid fa-comments', color: '#38ef7d', platform: 'OpenAI' },
-  'azure-openai': { label: 'Azure OpenAI', icon: 'fa-brands fa-microsoft', color: '#0078d4', platform: 'OpenAI' },
-  'gemini': { label: 'Gemini', icon: 'fa-brands fa-google', color: '#4facfe', platform: 'Gemini' }
+  // Claude 平台
+  'claude-official': { label: 'Claude Official', icon: 'fa-solid fa-key', color: '#c97b8b', platform: 'Claude' },
+  'claude-console': { label: 'Claude Console', icon: 'fa-solid fa-terminal', color: '#b06b7a', platform: 'Claude' },
+  'bedrock': { label: 'AWS Bedrock', icon: 'fa-brands fa-aws', color: '#d4a88a', platform: 'Claude' },
+  // OpenAI 平台
+  'openai': { label: 'OpenAI API', icon: 'fa-solid fa-bolt', color: '#a0c0b5', platform: 'OpenAI' },
+  'openai-responses': { label: 'ChatGPT 官方', icon: 'fa-solid fa-comments', color: '#8ab5a5', platform: 'OpenAI' },
+  'azure-openai': { label: 'Azure OpenAI', icon: 'fa-brands fa-microsoft', color: '#a0b0c5', platform: 'OpenAI' },
+  // Gemini 平台
+  'gemini': { label: 'Gemini OAuth', icon: 'fa-brands fa-google', color: '#b8a0c5', platform: 'Gemini' },
+  'gemini-api': { label: 'Gemini API', icon: 'fa-brands fa-google', color: '#9a85b5', platform: 'Gemini' },
+  // 国际平台
+  'xai': { label: 'xAI (Grok)', icon: 'fa-solid fa-bolt-lightning', color: '#1da1f2', platform: 'xAI' },
+  'mistral': { label: 'Mistral AI', icon: 'fa-solid fa-wind', color: '#ff7000', platform: '更多' },
+  'cohere': { label: 'Cohere', icon: 'fa-solid fa-circle-nodes', color: '#39594d', platform: '更多' },
+  // 中国平台
+  'deepseek': { label: 'DeepSeek', icon: 'fa-solid fa-microchip', color: '#4a7fd4', platform: 'DeepSeek' },
+  'qwen': { label: '通义千问', icon: 'fa-solid fa-cloud', color: '#6236ff', platform: '通义千问' },
+  'glm': { label: '智谱 GLM', icon: 'fa-solid fa-atom', color: '#3366cc', platform: '智谱GLM' },
+  'moonshot': { label: 'Kimi', icon: 'fa-solid fa-moon', color: '#1a1a2e', platform: 'Kimi' },
+  'doubao': { label: '豆包', icon: 'fa-solid fa-fire', color: '#ff6a3d', platform: '豆包' },
+  'baichuan': { label: '百川智能', icon: 'fa-solid fa-mountain', color: '#2c7be5', platform: '更多' },
+  'yi': { label: '零一万物', icon: 'fa-solid fa-star', color: '#00b386', platform: '更多' },
+  'minimax': { label: 'MiniMax', icon: 'fa-solid fa-wand-sparkles', color: '#7c4dff', platform: '更多' },
+  'stepfun': { label: '阶跃星辰', icon: 'fa-solid fa-stairs', color: '#2196f3', platform: '更多' },
+  'spark': { label: '讯飞星火', icon: 'fa-solid fa-fire-flame-curved', color: '#e53935', platform: '更多' },
+  'siliconflow': { label: '硅基流动', icon: 'fa-solid fa-microchip', color: '#6366f1', platform: '硅基流动' },
+  // 通用
+  'custom': { label: '自定义 API', icon: 'fa-solid fa-plug', color: '#607d8b', platform: '更多' },
+  'droid': { label: 'Droid', icon: 'fa-solid fa-android', color: '#78909c', platform: '更多' },
 }
 
 // 平台统计
@@ -584,16 +663,12 @@ function getPlatformLabel(type) {
 }
 
 function getPlatformIcon(type) {
-  const platform = subtypeMap[type]?.platform
-  if (platform === 'Claude') return 'fa-solid fa-brain'
-  if (platform === 'OpenAI') return 'fa-solid fa-robot'
-  if (platform === 'Gemini') return 'fa-brands fa-google'
-  return 'fa-solid fa-circle'
+  return subtypeMap[type]?.icon || 'fa-solid fa-circle'
 }
 
 function getPlatformClass(type) {
-  const platform = subtypeMap[type]?.platform?.toLowerCase()
-  return platform || 'unknown'
+  const group = platformGroups.find(g => g.types.includes(type))
+  return group?.key || 'unknown'
 }
 
 function getPlatformName(key) {
@@ -980,8 +1055,8 @@ onMounted(() => {
 }
 
 .stat-card.active {
-  border-color: #3b82f6;
-  background: linear-gradient(135deg, #f0f7ff 0%, #e8f4ff 100%);
+  border-color: var(--pink-accent, #c97b8b);
+  background: var(--pink-accent-light, #faf2f4);
 }
 
 .stat-icon {
@@ -1089,8 +1164,8 @@ onMounted(() => {
 }
 
 .platform-badge.claude {
-  background: #eef2ff;
-  color: #667eea;
+  background: var(--pink-accent-light, #faf2f4);
+  color: var(--pink-accent, #c97b8b);
 }
 
 .platform-badge.openai {
@@ -1101,6 +1176,41 @@ onMounted(() => {
 .platform-badge.gemini {
   background: #eff6ff;
   color: #3b82f6;
+}
+
+.platform-badge.deepseek {
+  background: #eef4fc;
+  color: #4a7fd4;
+}
+
+.platform-badge.qwen {
+  background: #f0ebff;
+  color: #6236ff;
+}
+
+.platform-badge.glm {
+  background: #e8f0ff;
+  color: #3366cc;
+}
+
+.platform-badge.moonshot {
+  background: #e8e8f0;
+  color: #1a1a2e;
+}
+
+.platform-badge.doubao {
+  background: #fff0eb;
+  color: #ff6a3d;
+}
+
+.platform-badge.xai {
+  background: #e8f5fd;
+  color: #1da1f2;
+}
+
+.platform-badge.other {
+  background: #f0f2f5;
+  color: #6b7785;
 }
 
 .status-badge {
@@ -1379,15 +1489,15 @@ onMounted(() => {
 }
 
 .usage-bar-fill.normal {
-  background: linear-gradient(90deg, #10b981, #34d399);
+  background: #a0c0b5;
 }
 
 .usage-bar-fill.warning {
-  background: linear-gradient(90deg, #f59e0b, #fbbf24);
+  background: #d4a88a;
 }
 
 .usage-bar-fill.danger {
-  background: linear-gradient(90deg, #ef4444, #f87171);
+  background: var(--pink-accent);
 }
 
 .no-usage {

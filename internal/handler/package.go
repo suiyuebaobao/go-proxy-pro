@@ -50,13 +50,14 @@ func (h *PackageHandler) ListPackages(c *gin.Context) {
 func (h *PackageHandler) CreatePackage(c *gin.Context) {
 	var req struct {
 		Name          string  `json:"name" binding:"required"`
-		Type          string  `json:"type" binding:"required,oneof=subscription quota"`
+		Type          string  `json:"type" binding:"required,oneof=subscription quota count"`
 		Price         float64 `json:"price"`
 		Duration      int     `json:"duration"`
 		DailyQuota    float64 `json:"daily_quota"`    // 订阅类型：每日额度
 		WeeklyQuota   float64 `json:"weekly_quota"`   // 订阅类型：每周额度
 		MonthlyQuota  float64 `json:"monthly_quota"`  // 订阅类型：每月额度
 		QuotaAmount   float64 `json:"quota_amount"`   // 额度类型：总额度
+		CountAmount   int64   `json:"count_amount"`   // 按次类型：总请求次数
 		AllowedModels string  `json:"allowed_models"` // 允许的模型
 		Description   string  `json:"description"`
 	}
@@ -75,6 +76,7 @@ func (h *PackageHandler) CreatePackage(c *gin.Context) {
 		WeeklyQuota:   req.WeeklyQuota,
 		MonthlyQuota:  req.MonthlyQuota,
 		QuotaAmount:   req.QuotaAmount,
+		CountAmount:   req.CountAmount,
 		AllowedModels: req.AllowedModels,
 		Description:   req.Description,
 		Status:        "active",
@@ -106,6 +108,7 @@ func (h *PackageHandler) UpdatePackage(c *gin.Context) {
 		WeeklyQuota   *float64 `json:"weekly_quota"`
 		MonthlyQuota  *float64 `json:"monthly_quota"`
 		QuotaAmount   *float64 `json:"quota_amount"`
+		CountAmount   *int64   `json:"count_amount"`
 		AllowedModels *string  `json:"allowed_models"`
 		Description   string   `json:"description"`
 		Status        string   `json:"status"`
@@ -136,6 +139,9 @@ func (h *PackageHandler) UpdatePackage(c *gin.Context) {
 	}
 	if req.QuotaAmount != nil {
 		pkg.QuotaAmount = *req.QuotaAmount
+	}
+	if req.CountAmount != nil {
+		pkg.CountAmount = *req.CountAmount
 	}
 	if req.AllowedModels != nil {
 		pkg.AllowedModels = *req.AllowedModels
@@ -217,15 +223,17 @@ func (h *PackageHandler) AssignPackage(c *gin.Context) {
 		AllowedModels: pkg.AllowedModels,
 	}
 
-	if pkg.Type == "subscription" {
-		// 订阅类型：复制周期额度限制
+	switch pkg.Type {
+	case "subscription":
 		up.DailyQuota = pkg.DailyQuota
 		up.WeeklyQuota = pkg.WeeklyQuota
 		up.MonthlyQuota = pkg.MonthlyQuota
-	} else if pkg.Type == "quota" {
-		// 额度类型：设置总额度
+	case "quota":
 		up.QuotaTotal = pkg.QuotaAmount
 		up.QuotaUsed = 0
+	case "count":
+		up.CountTotal = pkg.CountAmount
+		up.CountUsed = 0
 	}
 
 	if err := h.userPackageRepo.Create(up); err != nil {
@@ -260,6 +268,8 @@ func (h *PackageHandler) UpdateUserPackage(c *gin.Context) {
 		MonthlyUsed   *float64   `json:"monthly_used"`
 		QuotaTotal    *float64   `json:"quota_total"`
 		QuotaUsed     *float64   `json:"quota_used"`
+		CountTotal    *int64     `json:"count_total"`
+		CountUsed     *int64     `json:"count_used"`
 		AllowedModels *string    `json:"allowed_models"`
 	}
 
@@ -297,6 +307,12 @@ func (h *PackageHandler) UpdateUserPackage(c *gin.Context) {
 	}
 	if req.QuotaUsed != nil {
 		up.QuotaUsed = *req.QuotaUsed
+	}
+	if req.CountTotal != nil {
+		up.CountTotal = *req.CountTotal
+	}
+	if req.CountUsed != nil {
+		up.CountUsed = *req.CountUsed
 	}
 	if req.AllowedModels != nil {
 		up.AllowedModels = *req.AllowedModels

@@ -11,7 +11,7 @@
 <template>
   <div class="login-container">
     <div class="login-card">
-      <h2 class="login-title">Go-AIProxy</h2>
+      <h2 class="login-title">{{ siteStore.siteName }}</h2>
       <p class="login-subtitle">AI API 代理管理平台</p>
       <p class="welcome-text">欢迎各位</p>
 
@@ -78,8 +78,12 @@
 import { ref, reactive, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
+import { useSiteStore } from '@/stores/site'
 import { ElMessage } from 'element-plus'
 import api from '@/api'
+
+const siteStore = useSiteStore()
+siteStore.fetchSiteName()
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -161,40 +165,48 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--pink-bg, #fdf8f9);
 }
 
 .login-card {
-  width: 400px;
-  padding: 40px;
-  background: #fff;
-  border-radius: 8px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  width: 420px;
+  padding: 48px 40px;
+  background: var(--pink-surface, #ffffff);
+  border-radius: 16px;
+  border: 1px solid var(--pink-border, #f0dde2);
 }
 
 .login-title {
   text-align: center;
   font-size: 28px;
-  color: #333;
-  margin-bottom: 8px;
+  color: var(--pink-text, #3a3045);
+  margin-bottom: 6px;
+  font-weight: 700;
+  letter-spacing: 1px;
 }
 
 .login-subtitle {
   text-align: center;
-  color: #999;
-  margin-bottom: 10px;
+  color: var(--pink-text-secondary, #8b7d92);
+  margin-bottom: 8px;
+  font-size: 14px;
 }
 
 .welcome-text {
   text-align: center;
-  color: #667eea;
+  color: var(--pink-accent, #c97b8b);
   font-size: 14px;
-  margin-bottom: 20px;
+  margin-bottom: 28px;
   font-weight: 500;
 }
 
 .login-btn {
   width: 100%;
+  border-radius: 10px !important;
+  height: 44px;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 1px;
 }
 
 .captcha-row {
@@ -210,8 +222,8 @@ onMounted(() => {
 .captcha-image {
   height: 40px;
   cursor: pointer;
-  border-radius: 4px;
-  border: 1px solid #dcdfe6;
+  border-radius: 8px;
+  border: 1px solid var(--pink-border, #f0dde2);
 }
 
 .captcha-placeholder {
@@ -220,9 +232,9 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 4px;
-  border: 1px solid #dcdfe6;
-  color: #999;
+  border-radius: 8px;
+  border: 1px solid var(--pink-border, #f0dde2);
+  color: var(--pink-text-secondary, #8b7d92);
   font-size: 12px;
   cursor: pointer;
 }

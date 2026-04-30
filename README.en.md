@@ -1,6 +1,6 @@
 <div align="center">
 
-  # Go-AIProxy
+  # 叶渡AI Hub
 
   ### 🚀 Enterprise-Grade AI API Proxy Service
 
@@ -96,7 +96,7 @@
 ```bash
 # Clone the repository
 git clone https://github.com/suiyuebaobao/go-proxy-pro.git
-cd go-proxy-pro/go-aiproxy
+cd go-proxy-pro
 
 # Start services (MySQL + Application)
 docker-compose up -d
@@ -123,10 +123,10 @@ docker-compose down
 
 ```bash
 # Build backend
-go build -o aiproxy ./cmd/server
+go build -o fuye ./cmd/server
 
 # Run
-./aiproxy
+./fuye
 ```
 
 The service listens on port `8080` by default.
@@ -185,7 +185,7 @@ curl http://localhost:8080/responses \
 ## 📁 Project Structure
 
 ```
-go-aiproxy/
+fuye/
 ├── cmd/server/          # Application entry point
 ├── internal/
 │   ├── handler/         # HTTP handlers
@@ -230,16 +230,16 @@ go-aiproxy/
 | `DB_PORT` | `3306` | MySQL port |
 | `DB_USER` | `root` | MySQL username |
 | `DB_PASSWORD` | - | MySQL password |
-| `DB_NAME` | `aiproxy` | Database name |
+| `DB_NAME` | `fuye` | Database name |
 
 ### Docker Compose Variables
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `MYSQL_ROOT_PASSWORD` | `go-aiproxy-root` | MySQL root password |
-| `MYSQL_DATABASE` | `aiproxy` | Database name |
-| `MYSQL_USER` | `aiproxy` | MySQL user |
-| `MYSQL_PASSWORD` | `aiproxy-password` | MySQL password |
+| `MYSQL_ROOT_PASSWORD` | `fuye-root` | MySQL root password |
+| `MYSQL_DATABASE` | `fuye` | Database name |
+| `MYSQL_USER` | `fuye` | MySQL user |
+| `MYSQL_PASSWORD` | `fuye-password` | MySQL password |
 | `JWT_SECRET` | `change-in-production` | JWT secret key |
 
 ⚠️ **Change all default passwords in production!**
@@ -283,6 +283,6 @@ If you find this project helpful, please consider giving it a star! ⭐
 
   **95% of this project was developed using GLM with Claude Code**
 
-  [⬆ Back to Top](#go-aiproxy)
+  [⬆ Back to Top](#叶渡ai-hub)
 
 </div>

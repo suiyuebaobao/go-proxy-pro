@@ -18,12 +18,16 @@ const routes = [
     component: () => import('@/views/Login.vue'),
     meta: { guest: true }
   },
-  // 首页（公共页面）
   {
     path: '/',
-    name: 'Home',
-    component: () => import('@/views/Home.vue'),
-    meta: { guest: true }
+    redirect: () => {
+      const token = localStorage.getItem('token')
+      if (token) {
+        const user = JSON.parse(localStorage.getItem('user') || 'null')
+        return user?.role === 'admin' ? '/admin/overview' : '/user/dashboard'
+      }
+      return '/login'
+    }
   },
   // 后台入口（根据角色重定向）
   {
@@ -31,7 +35,7 @@ const routes = [
     redirect: to => {
       const userStore = useUserStore()
       if (userStore.user?.role === 'admin') {
-        return '/admin/system-monitor'
+        return '/admin/overview'
       }
       return '/user/dashboard'
     }
@@ -44,7 +48,12 @@ const routes = [
     children: [
       {
         path: '',
-        redirect: '/admin/system-monitor'
+        redirect: '/admin/overview'
+      },
+      {
+        path: 'overview',
+        name: 'Overview',
+        component: () => import('@/views/Overview.vue')
       },
       {
         path: 'system-monitor',
@@ -120,6 +129,11 @@ const routes = [
         path: 'system-logs',
         name: 'SystemLogs',
         component: () => import('@/views/SystemLogs.vue')
+      },
+      {
+        path: 'alerts',
+        name: 'Alerts',
+        component: () => import('@/views/Alerts.vue')
       }
     ]
   },
@@ -157,13 +171,18 @@ const routes = [
         path: 'profile',
         name: 'UserProfile',
         component: () => import('@/views/Profile.vue')
+      },
+      {
+        path: 'api-docs',
+        name: 'ApiDocs',
+        component: () => import('@/views/user/ApiDocs.vue')
       }
     ]
   },
   // 旧路由兼容重定向
   {
     path: '/system-monitor',
-    redirect: '/admin/system-monitor'
+    redirect: '/admin/overview'
   },
   {
     path: '/accounts',
@@ -193,10 +212,9 @@ const routes = [
     path: '/settings',
     redirect: '/admin/settings'
   },
-  // 404 处理
   {
     path: '/:pathMatch(.*)*',
-    redirect: '/'
+    redirect: '/login'
   }
 ]
 
@@ -217,7 +235,7 @@ router.beforeEach((to, from, next) => {
   // 已登录访问登录页，跳转到后台
   if (to.path === '/login' && userStore.isLoggedIn) {
     if (userStore.user?.role === 'admin') {
-      next('/admin/system-monitor')
+      next('/admin/overview')
     } else {
       next('/user/dashboard')
     }

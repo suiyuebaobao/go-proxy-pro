@@ -691,7 +691,7 @@ onUnmounted(() => {
 
 .unit {
   margin-left: 8px;
-  color: #909399;
+  color: #6b6573;
   font-size: 13px;
 }
 
@@ -708,7 +708,7 @@ onUnmounted(() => {
 }
 
 .no-data {
-  color: #c0c4cc;
+  color: var(--pink-text-secondary);
 }
 
 .api-key-prefix {
@@ -737,7 +737,7 @@ onUnmounted(() => {
 .session-id {
   font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
   font-size: 12px;
-  color: #606266;
+  color: var(--el-text-color-regular);
 }
 
 .pagination-wrap {

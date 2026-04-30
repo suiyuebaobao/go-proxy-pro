@@ -16,6 +16,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"math/rand"
 	"strings"
 	"sync"
@@ -28,6 +29,10 @@ import (
 	"go-aiproxy/internal/repository"
 	"go-aiproxy/pkg/logger"
 )
+
+// AlertCallback is a function that can be registered to receive alert triggers
+// This avoids import cycles between scheduler and service packages.
+var AlertCallback func(conditionType, message string)
 
 var (
 	ErrNoAvailableAccount = errors.New("no available account")
@@ -606,6 +611,17 @@ func (s *Scheduler) MarkAccountErrorWithReset(accountID uint, accountType string
 	}
 
 	s.repo.IncrementErrorCount(accountID)
+
+	if AlertCallback != nil {
+		go func() {
+			switch status {
+			case model.AccountStatusRateLimited:
+				AlertCallback("rate_limited", fmt.Sprintf("账户 #%d 被上游限速: %s", accountID, truncateString(errMsg, 100)))
+			case model.AccountStatusInvalid:
+				AlertCallback("account_banned", fmt.Sprintf("账户 #%d 已失效: %s", accountID, truncateString(errMsg, 100)))
+			}
+		}()
+	}
 }
 
 // MarkAccountSuccess 标记账户成功
@@ -650,8 +666,11 @@ func detectPlatformFallback(modelName string) string {
 	if strings.HasPrefix(modelLower, "gpt") ||
 		strings.HasPrefix(modelLower, "o1") ||
 		strings.HasPrefix(modelLower, "o3") ||
+		strings.HasPrefix(modelLower, "o4") ||
 		strings.HasPrefix(modelLower, "text-") ||
-		strings.HasPrefix(modelLower, "davinci") {
+		strings.HasPrefix(modelLower, "davinci") ||
+		strings.HasPrefix(modelLower, "chatgpt") ||
+		strings.HasPrefix(modelLower, "codex") {
 		return model.PlatformOpenAI
 	}
 
@@ -659,6 +678,84 @@ func detectPlatformFallback(modelName string) string {
 	if strings.HasPrefix(modelLower, "gemini") ||
 		strings.HasPrefix(modelLower, "models/gemini") {
 		return model.PlatformGemini
+	}
+
+	// xAI (Grok) 模型
+	if strings.HasPrefix(modelLower, "grok") {
+		return model.PlatformXAI
+	}
+
+	// Mistral 模型
+	if strings.HasPrefix(modelLower, "mistral") ||
+		strings.HasPrefix(modelLower, "mixtral") ||
+		strings.HasPrefix(modelLower, "codestral") ||
+		strings.HasPrefix(modelLower, "pixtral") {
+		return model.PlatformMistral
+	}
+
+	// Cohere 模型
+	if strings.HasPrefix(modelLower, "command") {
+		return model.PlatformCohere
+	}
+
+	// DeepSeek 模型
+	if strings.HasPrefix(modelLower, "deepseek") {
+		return model.PlatformDeepSeek
+	}
+
+	// 通义千问 模型
+	if strings.HasPrefix(modelLower, "qwen") {
+		return model.PlatformQwen
+	}
+
+	// 智谱 GLM 模型
+	if strings.HasPrefix(modelLower, "glm") ||
+		strings.HasPrefix(modelLower, "chatglm") ||
+		strings.HasPrefix(modelLower, "codegeex") {
+		return model.PlatformGLM
+	}
+
+	// 月之暗面 Moonshot 模型
+	if strings.HasPrefix(modelLower, "moonshot") ||
+		strings.HasPrefix(modelLower, "kimi") {
+		return model.PlatformMoonshot
+	}
+
+	// 字节豆包 模型
+	if strings.HasPrefix(modelLower, "doubao") ||
+		strings.Contains(modelLower, "doubao") {
+		return model.PlatformDoubao
+	}
+
+	// 百川 模型
+	if strings.HasPrefix(modelLower, "baichuan") {
+		return model.PlatformBaichuan
+	}
+
+	// 零一万物 Yi 模型
+	if strings.HasPrefix(modelLower, "yi-") {
+		return model.PlatformYi
+	}
+
+	// MiniMax 模型
+	if strings.HasPrefix(modelLower, "minimax") ||
+		strings.HasPrefix(modelLower, "abab") {
+		return model.PlatformMiniMax
+	}
+
+	// 阶跃星辰 模型
+	if strings.HasPrefix(modelLower, "step-") {
+		return model.PlatformStepfun
+	}
+
+	// 讯飞星火 模型
+	if strings.HasPrefix(modelLower, "spark") {
+		return model.PlatformSpark
+	}
+
+	// 硅基流动 模型（通常带有 vendor/model 格式的路径）
+	if strings.Contains(modelLower, "/") {
+		return model.PlatformSiliconFlow
 	}
 
 	return ""

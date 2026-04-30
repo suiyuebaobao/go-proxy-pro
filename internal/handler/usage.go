@@ -227,8 +227,13 @@ func (h *UsageHandler) GetAPIKeyUsage(c *gin.Context) {
 		return
 	}
 
-	// 验证 API Key 属于当前用户（这里应该在 service 层做验证）
-	_ = userID // TODO: 添加权限验证
+	// 验证 API Key 属于当前用户
+	apiKeyService := service.NewAPIKeyService()
+	apiKey, aErr := apiKeyService.GetByID(uint(keyID), userID)
+	if aErr != nil || apiKey == nil {
+		response.Forbidden(c, "无权查看此 API Key 的使用记录")
+		return
+	}
 
 	ctx := c.Request.Context()
 
@@ -589,6 +594,64 @@ func (h *UsageHandler) AdminGetUserUsageRecords(c *gin.Context) {
 		"total":     total,
 		"page":      page,
 		"page_size": pageSize,
+	})
+}
+
+// ========== 图表数据接口 ==========
+
+// AdminGetDailyTrend 最近 N 天每日趋势（消费/请求量/Token）
+func (h *UsageHandler) AdminGetDailyTrend(c *gin.Context) {
+	days, _ := strconv.Atoi(c.DefaultQuery("days", "30"))
+	if days <= 0 || days > 365 {
+		days = 30
+	}
+
+	endDate := time.Now().Format("2006-01-02")
+	startDate := time.Now().AddDate(0, 0, -days).Format("2006-01-02")
+
+	summaries, err := h.dailyUsageRepo.GetDailySummaryAll(startDate, endDate)
+	if err != nil {
+		response.InternalError(c, err.Error())
+		return
+	}
+
+	response.Success(c, gin.H{
+		"start_date": startDate,
+		"end_date":   endDate,
+		"items":      summaries,
+	})
+}
+
+// AdminGetModelDistribution 模型使用占比
+func (h *UsageHandler) AdminGetModelDistribution(c *gin.Context) {
+	days, _ := strconv.Atoi(c.DefaultQuery("days", "30"))
+	if days <= 0 || days > 365 {
+		days = 30
+	}
+	endDate := time.Now().Format("2006-01-02")
+	startDate := time.Now().AddDate(0, 0, -days).Format("2006-01-02")
+
+	summaries, err := h.dailyUsageRepo.GetModelSummary(startDate, endDate)
+	if err != nil {
+		response.InternalError(c, err.Error())
+		return
+	}
+
+	response.Success(c, gin.H{
+		"items": summaries,
+	})
+}
+
+// AdminGetHourlyTrend 最近 24 小时逐小时趋势（从 request_logs）
+func (h *UsageHandler) AdminGetHourlyTrend(c *gin.Context) {
+	reqLogRepo := repository.NewRequestLogRepository()
+	items, err := reqLogRepo.GetHourlyTrend()
+	if err != nil {
+		response.InternalError(c, err.Error())
+		return
+	}
+	response.Success(c, gin.H{
+		"items": items,
 	})
 }
 

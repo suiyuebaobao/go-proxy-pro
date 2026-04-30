@@ -201,14 +201,35 @@ func (h *AccountHandler) UpdateStatus(c *gin.Context) {
 
 func (h *AccountHandler) GetTypes(c *gin.Context) {
 	types := []gin.H{
+		// Claude 平台
 		{"value": model.AccountTypeClaudeOfficial, "label": "Claude Official", "platform": "claude"},
 		{"value": model.AccountTypeClaudeConsole, "label": "Claude Console", "platform": "claude"},
 		{"value": model.AccountTypeBedrock, "label": "AWS Bedrock", "platform": "claude"},
+		// OpenAI 平台
 		{"value": model.AccountTypeOpenAI, "label": "OpenAI", "platform": "openai"},
 		{"value": model.AccountTypeOpenAIResponses, "label": "OpenAI Responses", "platform": "openai"},
 		{"value": model.AccountTypeAzureOpenAI, "label": "Azure OpenAI", "platform": "openai"},
+		// Gemini 平台
 		{"value": model.AccountTypeGemini, "label": "Gemini OAuth", "platform": "gemini"},
 		{"value": model.AccountTypeGeminiAPI, "label": "Gemini API", "platform": "gemini"},
+		// 国际平台
+		{"value": model.AccountTypeXAI, "label": "xAI (Grok)", "platform": "xai"},
+		{"value": model.AccountTypeMistral, "label": "Mistral AI", "platform": "mistral"},
+		{"value": model.AccountTypeCohere, "label": "Cohere", "platform": "cohere"},
+		// 中国平台
+		{"value": model.AccountTypeDeepSeek, "label": "DeepSeek 深度求索", "platform": "deepseek"},
+		{"value": model.AccountTypeQwen, "label": "通义千问 Qwen", "platform": "qwen"},
+		{"value": model.AccountTypeGLM, "label": "智谱 GLM", "platform": "glm"},
+		{"value": model.AccountTypeMoonshot, "label": "月之暗面 Kimi", "platform": "moonshot"},
+		{"value": model.AccountTypeDoubao, "label": "字节豆包", "platform": "doubao"},
+		{"value": model.AccountTypeBaichuan, "label": "百川智能", "platform": "baichuan"},
+		{"value": model.AccountTypeYi, "label": "零一万物 Yi", "platform": "yi"},
+		{"value": model.AccountTypeMiniMax, "label": "MiniMax", "platform": "minimax"},
+		{"value": model.AccountTypeStepfun, "label": "阶跃星辰", "platform": "stepfun"},
+		{"value": model.AccountTypeSpark, "label": "讯飞星火", "platform": "spark"},
+		{"value": model.AccountTypeSiliconFlow, "label": "硅基流动", "platform": "siliconflow"},
+		// 通用
+		{"value": model.AccountTypeCustom, "label": "自定义兼容 API", "platform": "custom"},
 		{"value": model.AccountTypeDroid, "label": "Droid", "platform": "other"},
 	}
 	response.Success(c, types)

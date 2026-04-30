@@ -1,0 +1,1 @@
+import{a6 as r,r as s,j as f}from"./index-BgPRS0ga.js";const c=r("site",()=>{const a=s(document.title||"叶渡AI Hub");let e=!1;async function i(){if(!e)try{const t=await f.getSiteInfo();t.site_name&&(a.value=t.site_name,document.title=t.site_name),e=!0}catch{}}function n(){return e=!1,i()}return{siteName:a,fetchSiteName:i,refresh:n}});export{c as u};

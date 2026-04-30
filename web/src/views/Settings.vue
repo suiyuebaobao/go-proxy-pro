@@ -14,6 +14,25 @@
       <h2>系统设置</h2>
     </div>
 
+    <!-- 站点设置 -->
+    <el-row :gutter="20" style="margin-bottom: 20px;">
+      <el-col :span="12">
+        <el-card class="config-card">
+          <template #header>
+            <div class="card-header">
+              <span>站点设置</span>
+            </div>
+          </template>
+          <el-form label-width="140px" v-loading="loading">
+            <el-form-item label="站点名称">
+              <el-input v-model="configs.site_name" placeholder="叶渡AI Hub" style="width: 300px" maxlength="30" show-word-limit />
+              <div class="form-tip">显示在登录页、侧栏、首页等处的系统名称，修改后刷新页面生效</div>
+            </el-form-item>
+          </el-form>
+        </el-card>
+      </el-col>
+    </el-row>
+
     <el-row :gutter="20">
       <!-- 安全配置 -->
       <el-col :span="12">
@@ -330,6 +349,46 @@
     </el-row>
 
     <el-row :gutter="20" style="margin-top: 20px;">
+      <!-- IP 访问控制 -->
+      <el-col :span="12">
+        <el-card class="config-card">
+          <template #header>
+            <div class="card-header">
+              <span>IP 访问控制</span>
+            </div>
+          </template>
+          <el-form label-width="140px" v-loading="loading">
+            <el-form-item label="全局 IP 黑名单">
+              <el-input v-model="configs.ip_blacklist" type="textarea" :rows="3" placeholder="逗号分隔，支持 CIDR，如：1.2.3.4,10.0.0.0/8" />
+              <div class="form-tip">被列入的 IP 或网段将被拒绝所有代理请求</div>
+            </el-form-item>
+          </el-form>
+        </el-card>
+      </el-col>
+
+      <!-- 配额策略 -->
+      <el-col :span="12">
+        <el-card class="config-card">
+          <template #header>
+            <div class="card-header">
+              <span>配额策略</span>
+            </div>
+          </template>
+          <el-form label-width="140px" v-loading="loading">
+            <el-form-item label="配额用尽策略">
+              <el-select v-model="configs.quota_policy" style="width: 200px">
+                <el-option label="关闭检查" value="off" />
+                <el-option label="仅告警（不阻断）" value="warn" />
+                <el-option label="强制封停" value="enforce" />
+              </el-select>
+              <div class="form-tip">套餐额度/次数用尽后的处理策略（适用于额度和按次套餐）</div>
+            </el-form-item>
+          </el-form>
+        </el-card>
+      </el-col>
+    </el-row>
+
+    <el-row :gutter="20" style="margin-top: 20px;">
       <!-- 所有配置项 -->
       <el-col :span="24">
         <el-card class="config-card">
@@ -402,6 +461,9 @@
 import { ref, reactive, computed, onMounted, onUnmounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import api from '@/api'
+import { useSiteStore } from '@/stores/site'
+
+const siteStore = useSiteStore()
 
 const loading = ref(false)
 const saving = ref(false)
@@ -443,7 +505,13 @@ const configs = reactive({
   banned_probe_interval: 1,
   // Token 刷新
   token_refresh_cooldown: 30,
-  token_refresh_max_retries: 3
+  token_refresh_max_retries: 3,
+  // IP 访问控制
+  ip_blacklist: '',
+  // 配额策略
+  quota_policy: 'off',
+  // 站点设置
+  site_name: '叶渡AI Hub'
 })
 
 const configList = ref([])
@@ -555,10 +623,19 @@ async function saveConfigs() {
       banned_probe_interval: String(configs.banned_probe_interval),
       // Token 刷新
       token_refresh_cooldown: String(configs.token_refresh_cooldown),
-      token_refresh_max_retries: String(configs.token_refresh_max_retries)
+      token_refresh_max_retries: String(configs.token_refresh_max_retries),
+      // IP 访问控制
+      ip_blacklist: configs.ip_blacklist || '',
+      // 配额策略
+      quota_policy: configs.quota_policy || 'off',
+      // 站点设置
+      site_name: configs.site_name || '叶渡AI Hub'
     }
     await api.updateSystemConfigs(toSave)
     ElMessage.success('配置保存成功')
+
+    // 刷新站点名称缓存
+    await siteStore.refresh()
 
     // 刷新配置
     await loadConfigs()
@@ -619,7 +696,7 @@ onMounted(() => {
 }
 
 .page-header h2 {
-  color: #333;
+  color: var(--pink-text);
   margin: 0;
 }
 
@@ -635,24 +712,24 @@ onMounted(() => {
 
 .unit {
   margin-left: 10px;
-  color: #909399;
+  color: #6b6573;
 }
 
 .form-tip {
   font-size: 12px;
-  color: #909399;
+  color: #6b6573;
   margin-top: 4px;
 }
 
 .text-muted {
-  color: #c0c4cc;
+  color: var(--pink-text-secondary);
 }
 
 .action-bar {
   margin-top: 30px;
   padding: 20px;
-  background: #f5f7fa;
-  border-radius: 4px;
+  background: var(--pink-accent-light, #faf2f4);
+  border-radius: 8px;
   text-align: center;
 }
 

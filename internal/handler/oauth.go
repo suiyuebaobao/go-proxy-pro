@@ -673,14 +673,14 @@ func dialWithProxy(network, addr string, proxyConfig *ProxyConfig) (net.Conn, er
 				Password: proxyConfig.Password,
 			}
 		}
-		dialer, err := proxy.SOCKS5("tcp", fmt.Sprintf("%s:%d", proxyConfig.Host, proxyConfig.Port), auth, proxy.Direct)
+		dialer, err := proxy.SOCKS5("tcp", net.JoinHostPort(proxyConfig.Host, fmt.Sprintf("%d", proxyConfig.Port)), auth, proxy.Direct)
 		if err != nil {
 			return nil, err
 		}
 		return dialer.Dial(network, addr)
 	case "http", "https":
 		// HTTP 代理使用 CONNECT 方法
-		proxyAddr := fmt.Sprintf("%s:%d", proxyConfig.Host, proxyConfig.Port)
+		proxyAddr := net.JoinHostPort(proxyConfig.Host, fmt.Sprintf("%d", proxyConfig.Port))
 		conn, err := net.DialTimeout("tcp", proxyAddr, 30*time.Second)
 		if err != nil {
 			return nil, err

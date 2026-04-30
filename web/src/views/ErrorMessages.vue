@@ -501,7 +501,7 @@ onMounted(() => {
 }
 
 .page-header h2 {
-  color: #333;
+  color: var(--pink-text);
   margin: 0;
 }
 
@@ -512,7 +512,7 @@ onMounted(() => {
 }
 
 .muted-text {
-  color: #909399;
+  color: #6b6573;
   font-size: 13px;
 }
 
@@ -532,13 +532,13 @@ onMounted(() => {
 
 .form-tip {
   margin-left: 10px;
-  color: #909399;
+  color: #6b6573;
   font-size: 12px;
 }
 
 .rule-guide {
-  background: linear-gradient(135deg, #f0f9ff 0%, #e8f4fd 100%);
-  border: 1px solid #d4e8f7;
+  background: var(--pink-accent-light, #faf2f4);
+  border: 1px solid var(--pink-border, #f0dde2);
   border-radius: 8px;
   padding: 15px 20px;
   margin: 15px 0;
@@ -546,7 +546,7 @@ onMounted(() => {
 
 .guide-title {
   font-weight: 600;
-  color: #303133;
+  color: var(--pink-text);
   margin-bottom: 12px;
   font-size: 14px;
 }
@@ -562,7 +562,7 @@ onMounted(() => {
   align-items: center;
   gap: 8px;
   font-size: 13px;
-  color: #606266;
+  color: var(--el-text-color-regular);
 }
 
 .match-condition {
@@ -573,12 +573,12 @@ onMounted(() => {
 }
 
 .condition-sep {
-  color: #909399;
+  color: #6b6573;
   font-size: 12px;
 }
 
 .priority-num {
-  color: #909399;
+  color: #6b6573;
   font-size: 13px;
 }
 </style>

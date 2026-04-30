@@ -39,18 +39,23 @@ func (a *OpenAIAdapter) Platform() string {
 }
 
 func (a *OpenAIAdapter) SupportedTypes() []string {
-	return []string{model.AccountTypeOpenAI, model.AccountTypeOpenAIResponses}
+	return model.OpenAICompatibleAccountTypes()
 }
 
 // OpenAI 请求格式
 type openAIRequest struct {
-	Model       string          `json:"model"`
-	Messages    []openAIMessage `json:"messages"`
-	MaxTokens   int             `json:"max_tokens,omitempty"`
-	Temperature float64         `json:"temperature,omitempty"`
-	TopP        float64         `json:"top_p,omitempty"`
-	Stream      bool            `json:"stream,omitempty"`
-	Stop        []string        `json:"stop,omitempty"`
+	Model         string            `json:"model"`
+	Messages      []openAIMessage   `json:"messages"`
+	MaxTokens     int               `json:"max_tokens,omitempty"`
+	Temperature   float64           `json:"temperature,omitempty"`
+	TopP          float64           `json:"top_p,omitempty"`
+	Stream        bool              `json:"stream,omitempty"`
+	StreamOptions *openAIStreamOpts `json:"stream_options,omitempty"`
+	Stop          []string          `json:"stop,omitempty"`
+}
+
+type openAIStreamOpts struct {
+	IncludeUsage bool `json:"include_usage"`
 }
 
 type openAIMessage struct {
@@ -174,6 +179,7 @@ func (a *OpenAIAdapter) SendStream(ctx context.Context, account *model.Account, 
 	// 构建 OpenAI 请求
 	openAIReq := a.convertRequest(req)
 	openAIReq.Stream = true
+	openAIReq.StreamOptions = &openAIStreamOpts{IncludeUsage: true}
 
 	body, err := json.Marshal(openAIReq)
 	if err != nil {
@@ -200,7 +206,7 @@ func (a *OpenAIAdapter) SendStream(ctx context.Context, account *model.Account, 
 	log.Debug("OpenAI Stream 请求开始 - URL: %s, AccountID: %d, Model: %s",
 		fullURL, account.ID, req.Model)
 
-	client := GetHTTPClient(account)
+	client := GetStreamHTTPClient(account)
 	resp, err := client.Do(httpReq)
 	if err != nil {
 		log.Error("OpenAI Stream 请求失败 - 网络错误: %v", err)

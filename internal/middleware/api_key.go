@@ -84,6 +84,11 @@ func APIKeyAuth() gin.HandlerFunc {
 		priceRate := globalRate
 		user, err := userRepo.GetByID(key.UserID)
 		if err == nil && user != nil {
+			if user.Status != "active" {
+				log.Debug("API Key 认证失败 | IP: %s | KeyID: %d | 原因: 用户已禁用", c.ClientIP(), key.ID)
+				response.CustomUnauthorizedAbort(c, model.ErrorTypeAuthFailed, "用户已被禁用")
+				return
+			}
 			c.Set("user", user)
 
 			// 全局倍率是默认值1，才看用户倍率

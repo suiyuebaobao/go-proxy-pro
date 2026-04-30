@@ -68,6 +68,9 @@ export default {
   login: (data) => Post('/auth/login', data),
   register: (data) => Post('/auth/register', data),
 
+  // Public - Site Info (no auth required)
+  getSiteInfo: () => Get('/site-info'),
+
   // Profile
   getProfile: () => Get('/profile'),
   updateProfile: (data) => Put('/profile', data),
@@ -101,9 +104,23 @@ export default {
 
   // Admin - Request Logs
   getRequestLogs: (params) => Get('/admin/logs', { params }),
+  getRequestLogDetail: (id) => Get(`/admin/logs/${id}`),
   getRequestLogSummary: (params) => Get('/admin/logs/summary', { params }),
   getAccountLoadStats: (params) => Get('/admin/logs/account-load', { params }),
   getAllUsageSummary: (params) => Get('/admin/logs/usage-summary', { params }),
+
+  // Admin - Chart Stats
+  getDailyTrend: (params) => Get('/admin/stats/daily-trend', { params }),
+  getModelDistribution: (params) => Get('/admin/stats/model-distribution', { params }),
+  getHourlyTrend: () => Get('/admin/stats/hourly-trend'),
+
+  // Admin - Alerts
+  getAlertRules: () => Get('/admin/alerts/rules'),
+  createAlertRule: (data) => Post('/admin/alerts/rules', data),
+  updateAlertRule: (id, data) => Put(`/admin/alerts/rules/${id}`, data),
+  deleteAlertRule: (id) => Delete(`/admin/alerts/rules/${id}`),
+  testAlertRule: (id) => Post(`/admin/alerts/rules/${id}/test`),
+  getAlertLogs: (params) => Get('/admin/alerts/logs', { params }),
 
   // Admin - User Usage Records
   getUserUsageRecords: (userId, params) => Get(`/admin/users/${userId}/usage/records`, { params }),
@@ -161,6 +178,8 @@ export default {
   getMyUsageSummary: () => Get('/usage/summary'),
   getMyDailyUsage: (params) => Get('/usage/daily', { params }),
   getMyModelUsage: (params) => Get('/usage/models', { params }),
+  getMyUsageRecords: (params) => Get('/usage/records', { params }),
+  getMyModelStats: (params) => Get('/usage/models', { params }),
 
   // Admin - Cache Management
   getCacheStats: () => Get('/admin/cache/stats'),
@@ -260,7 +279,7 @@ export default {
   // Admin - System Monitor (系统监控)
   getMonitorData: () => Get('/admin/monitor'),
   getSystemStats: () => Get('/admin/monitor/system'),
-  getCacheStats: () => Get('/admin/monitor/cache'),
+  getMonitorCacheStats: () => Get('/admin/monitor/cache'),
   getMySQLStats: () => Get('/admin/monitor/mysql'),
   getAccountStats: () => Get('/admin/monitor/accounts'),
   getUserStats: () => Get('/admin/monitor/users'),

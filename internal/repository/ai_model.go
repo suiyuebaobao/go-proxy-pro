@@ -82,14 +82,32 @@ func (r *AIModelRepository) BatchCreate(models []model.AIModel) error {
 	return r.db.CreateInBatches(models, 100).Error
 }
 
-// InitDefaultModels 初始化默认模型
+// InitDefaultModels 初始化默认模型，并增量补充新增的默认模型
 func (r *AIModelRepository) InitDefaultModels() error {
 	var count int64
 	r.db.Model(&model.AIModel{}).Count(&count)
-	if count > 0 {
-		return nil // 已有数据，不初始化
+	if count == 0 {
+		return r.BatchCreate(model.DefaultModels)
 	}
-	return r.BatchCreate(model.DefaultModels)
+
+	// 已有数据时，增量插入不存在的模型
+	var existingNames []string
+	r.db.Model(&model.AIModel{}).Pluck("name", &existingNames)
+	nameSet := make(map[string]bool, len(existingNames))
+	for _, n := range existingNames {
+		nameSet[n] = true
+	}
+
+	var missing []model.AIModel
+	for _, m := range model.DefaultModels {
+		if !nameSet[m.Name] {
+			missing = append(missing, m)
+		}
+	}
+	if len(missing) == 0 {
+		return nil
+	}
+	return r.BatchCreate(missing)
 }
 
 // ResetDefaultModels 重置为默认模型（删除所有现有模型并重新创建）

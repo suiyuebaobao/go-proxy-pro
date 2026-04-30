@@ -398,6 +398,11 @@ func (a *GeminiAdapter) buildURL(account *model.Account, modelName string, strea
 	// API Key 认证
 	if account.APIKey != "" {
 		url += "?key=" + account.APIKey
+		if stream {
+			url += "&alt=sse"
+		}
+	} else if stream {
+		url += "?alt=sse"
 	}
 
 	return url

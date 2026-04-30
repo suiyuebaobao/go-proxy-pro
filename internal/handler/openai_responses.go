@@ -23,6 +23,7 @@ import (
 	"strings"
 	"time"
 
+	"go-aiproxy/internal/middleware"
 	"go-aiproxy/internal/model"
 	"go-aiproxy/internal/proxy/adapter"
 	"go-aiproxy/internal/proxy/scheduler"
@@ -185,7 +186,7 @@ func (h *OpenAIResponsesHandler) HandleResponses(c *gin.Context) {
 	log.Info("会话哈希 - SessionID: %s", sessionID)
 
 	// 选择账户（支持 openai-responses 和 openai 两种类型，支持会话粘性）
-	ctx := context.Background()
+	ctx := c.Request.Context()
 	accountTypes := []string{model.AccountTypeOpenAIResponses, model.AccountTypeOpenAI}
 	account, err := h.scheduler.SelectAccountByTypesWithSession(ctx, accountTypes, modelName, sessionID, userID, apiKeyID)
 	if err != nil {
@@ -618,30 +619,32 @@ func (h *OpenAIResponsesHandler) applyRateToUsageMap(usage map[string]interface{
 	}
 }
 
+// responsesTokenFieldPatterns 预编译的正则表达式，用于 OpenAI Responses API 的 SSE token 字段匹配
+var responsesTokenFieldPatterns = func() map[string]*regexp.Regexp {
+	fields := []string{
+		"input_tokens", "output_tokens", "cached_tokens",
+		"cache_creation_input_tokens", "cache_read_input_tokens", "total_tokens",
+	}
+	patterns := make(map[string]*regexp.Regexp, len(fields))
+	for _, field := range fields {
+		patterns[field] = regexp.MustCompile(`"` + field + `"\s*:\s*(\d+)`)
+	}
+	return patterns
+}()
+
 // applyRateToSSEChunk 将倍率应用到 SSE 数据块中的 token 字段
 func (h *OpenAIResponsesHandler) applyRateToSSEChunk(chunk []byte, rate float64) []byte {
 	content := string(chunk)
 
-	// 匹配所有 token 相关的字段并乘以倍率
-	tokenFields := []string{
-		"input_tokens",
-		"output_tokens",
-		"cached_tokens",
-		"cache_creation_input_tokens",
-		"cache_read_input_tokens",
-		"total_tokens",
-	}
-
-	for _, field := range tokenFields {
-		// 匹配 "field": 数字 或 "field":数字
-		pattern := regexp.MustCompile(`"` + field + `"\s*:\s*(\d+)`)
+	for _, pattern := range responsesTokenFieldPatterns {
 		content = pattern.ReplaceAllStringFunc(content, func(match string) string {
-			// 提取数字
-			numPattern := regexp.MustCompile(`(\d+)`)
-			numStr := numPattern.FindString(match)
-			if num, err := strconv.Atoi(numStr); err == nil {
+			sub := pattern.FindStringSubmatch(match)
+			if len(sub) < 2 {
+				return match
+			}
+			if num, err := strconv.Atoi(sub[1]); err == nil {
 				newNum := int(float64(num) * rate)
-				return strings.Replace(match, numStr, strconv.Itoa(newNum), 1)
+				return strings.Replace(match, sub[1], strconv.Itoa(newNum), 1)
 			}
 			return match
 		})
@@ -651,6 +654,7 @@ func (h *OpenAIResponsesHandler) applyRateToSSEChunk(chunk []byte, rate float64)
 }
 
 // recordUsage 记录使用量到 Redis 和 MySQL
+// 注意：调用者已经完成了倍率计算，此处传入的 token 已是倍率后的值，不再二次应用
 func (h *OpenAIResponsesHandler) recordUsage(c *gin.Context, userID, apiKeyID, accountID uint, modelName string, inputTokens, outputTokens, cacheReadTokens, cacheCreationTokens int) {
 	log := logger.GetLogger("openai-responses")
 	log.Info("Usage - User: %d, APIKey: %d, Account: %d, Model: %s, Input: %d, Output: %d, CacheRead: %d, CacheCreation: %d",
@@ -658,21 +662,12 @@ func (h *OpenAIResponsesHandler) recordUsage(c *gin.Context, userID, apiKeyID, a
 
 	ctx := context.Background()
 
-	// 获取价格倍率
-	priceRate := 1.0
-	if rate, ok := c.Get("api_key_price_rate"); ok {
-		if r, ok := rate.(float64); ok {
-			priceRate = r
-		}
-	}
+	ratedInputTokens := inputTokens
+	ratedOutputTokens := outputTokens
+	ratedCacheCreationTokens := cacheCreationTokens
+	ratedCacheReadTokens := cacheReadTokens
 
-	// 应用倍率到 token（用于日志记录和费用计算）
-	ratedInputTokens := int(float64(inputTokens) * priceRate)
-	ratedOutputTokens := int(float64(outputTokens) * priceRate)
-	ratedCacheCreationTokens := int(float64(cacheCreationTokens) * priceRate)
-	ratedCacheReadTokens := int(float64(cacheReadTokens) * priceRate)
-
-	// 计算费用（使用倍率后的 token）
+	// 计算费用（token 已含倍率）
 	tokenUsage := &service.TokenUsage{
 		InputTokens:              ratedInputTokens,
 		OutputTokens:             ratedOutputTokens,
@@ -715,35 +710,43 @@ func (h *OpenAIResponsesHandler) recordUsage(c *gin.Context, userID, apiKeyID, a
 		log.Error("记录使用统计失败: %v", err)
 	}
 
-	// 记录模型使用统计（使用倍率后的 token）
-	totalTokens := int64(ratedInputTokens + ratedOutputTokens)
-	if err := h.usageService.IncrementModelUsage(ctx, userID, modelName, totalTokens, costBreakdown.TotalCost); err != nil {
-		log.Error("记录模型使用统计失败: %v", err)
-	}
+	// 计算总 token（用于 API Key 和套餐统计）
+	totalTokens := int64(ratedInputTokens + ratedOutputTokens + ratedCacheCreationTokens + ratedCacheReadTokens)
 
-	// 记录账户费用到 Redis
+	// 记录账户费用到 MySQL
 	if accountID > 0 {
 		if err := h.usageService.IncrementAccountCost(ctx, accountID, costBreakdown.TotalCost); err != nil {
 			log.Error("记录账户费用失败: %v", err)
 		}
 	}
 
-	// 增量更新 MySQL 每日汇总（使用倍率后的 token）
-	dailyUsage := &model.DailyUsage{
-		RequestCount:             1,
-		InputTokens:              int64(ratedInputTokens),
-		OutputTokens:             int64(ratedOutputTokens),
-		CacheCreationInputTokens: int64(ratedCacheCreationTokens),
-		CacheReadInputTokens:     int64(ratedCacheReadTokens),
-		TotalTokens:              int64(ratedInputTokens + ratedOutputTokens),
-		InputCost:                costBreakdown.InputCost,
-		OutputCost:               costBreakdown.OutputCost,
-		CacheCreateCost:          costBreakdown.CacheCreateCost,
-		CacheReadCost:            costBreakdown.CacheReadCost,
-		TotalCost:                costBreakdown.TotalCost,
+	// 更新 API Key 使用统计（MySQL）
+	if apiKeyID > 0 {
+		apiKeyService := service.NewAPIKeyService()
+		if err := apiKeyService.IncrementUsage(apiKeyID, totalTokens, costBreakdown.TotalCost); err != nil {
+			log.Error("更新 API Key 使用统计失败: %v", err)
+		}
 	}
-	if err := h.dailyUsageRepo.IncrementUsage(userID, modelName, dailyUsage); err != nil {
-		log.Error("更新每日汇总失败: %v", err)
+
+	// 更新绑定的套餐使用量
+	if packageID, ok := c.Get("api_key_package_id"); ok {
+		if pkgID, ok := packageID.(uint); ok && pkgID > 0 {
+			billingType := ""
+			if bt, ok := c.Get("api_key_billing_type"); ok {
+				billingType, _ = bt.(string)
+			}
+			userPackageRepo := repository.NewUserPackageRepository()
+			userPackage, err := userPackageRepo.GetByID(pkgID)
+			if err == nil && userPackage != nil {
+				if userPackage.ResetPeriodUsageIfNeeded() {
+					userPackageRepo.Update(userPackage)
+				}
+				if err := userPackageRepo.IncrementUsage(pkgID, billingType, costBreakdown.TotalCost); err != nil {
+					log.Error("更新用户套餐使用量失败: %v", err)
+				}
+				middleware.InvalidateQuotaCache(pkgID)
+			}
+		}
 	}
 
 	log.Info("使用记录已保存 - Cost: %.6f", costBreakdown.TotalCost)

@@ -13,14 +13,19 @@
   <div class="system-monitor">
     <div class="page-header">
       <h2>系统监控</h2>
-      <el-button type="primary" :loading="loading" @click="fetchData">
-        <el-icon><Refresh /></el-icon>
-        刷新
-      </el-button>
+      <div class="header-right">
+        <span v-if="data.updated_at" class="last-update-inline">
+          更新于 {{ formatTime(data.updated_at) }}
+        </span>
+        <el-button type="primary" :loading="loading" @click="fetchData(true)">
+          <el-icon><Refresh /></el-icon>
+          刷新
+        </el-button>
+      </div>
     </div>
 
     <!-- 今日使用概览 -->
-    <el-row :gutter="16" class="stat-row">
+    <el-row :gutter="16" class="stat-row" :class="{ 'refresh-flash': refreshing }">
       <el-col :span="6">
         <el-card shadow="hover" class="stat-card">
           <div class="stat-icon cost-icon">
@@ -68,7 +73,7 @@
     </el-row>
 
     <!-- 总使用概览 -->
-    <el-row :gutter="16" class="stat-row">
+    <el-row :gutter="16" class="stat-row" :class="{ 'refresh-flash': refreshing }">
       <el-col :span="6">
         <el-card shadow="hover" class="stat-card total">
           <div class="stat-icon total-cost-icon">
@@ -208,7 +213,7 @@
     </el-row>
 
     <!-- 系统资源 -->
-    <el-row :gutter="16" class="section-row">
+    <el-row :gutter="16" class="section-row" :class="{ 'refresh-flash': refreshing }">
       <el-col :span="8">
         <el-card shadow="hover">
           <template #header>
@@ -223,6 +228,9 @@
             :stroke-width="20"
             :format="(p) => p.toFixed(1) + '%'"
           />
+          <div class="resource-detail">
+            {{ data.system?.cpu_cores || 0 }} 核心 / 使用率 {{ (data.system?.cpu_usage || 0).toFixed(1) }}%
+          </div>
         </el-card>
       </el-col>
       <el-col :span="8">
@@ -319,28 +327,32 @@
       </el-col>
     </el-row>
 
-    <!-- 更新时间 -->
-    <div class="update-time" v-if="data.updated_at">
-      最后更新: {{ formatTime(data.updated_at) }}
-    </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import api from '@/api'
 import { ElMessage } from 'element-plus'
 import { Refresh, Money, Coin, Connection, User, Files } from '@element-plus/icons-vue'
 
 const loading = ref(false)
 const data = ref({})
+let refreshTimer = null
 
-const fetchData = async () => {
+const refreshing = ref(false)
+
+const fetchData = async (manual = false) => {
   loading.value = true
   try {
     const res = await api.getMonitorData()
     if (res.code === 0) {
       data.value = res.data
+      if (manual) {
+        refreshing.value = true
+        setTimeout(() => { refreshing.value = false }, 600)
+        ElMessage.success('监控数据已刷新')
+      }
     } else {
       ElMessage.error(res.message || '获取监控数据失败')
     }
@@ -388,6 +400,14 @@ const getProgressColor = (percentage) => {
 
 onMounted(() => {
   fetchData()
+  refreshTimer = setInterval(fetchData, 10000)
+})
+
+onUnmounted(() => {
+  if (refreshTimer) {
+    clearInterval(refreshTimer)
+    refreshTimer = null
+  }
 })
 </script>
 
@@ -405,7 +425,7 @@ onMounted(() => {
 
 .page-header h2 {
   margin: 0;
-  color: #303133;
+  color: var(--pink-text);
 }
 
 .stat-row {
@@ -441,47 +461,46 @@ onMounted(() => {
 }
 
 .cost-icon {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--pink-accent);
   color: white;
 }
 
 .token-icon {
-  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  background: #d4a0ac;
   color: white;
 }
 
 .request-icon {
-  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+  background: #b8a0c5;
   color: white;
 }
 
 .user-icon {
-  background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+  background: #a0c0b5;
   color: white;
 }
 
-/* 总使用卡片样式 */
 .stat-card.total {
-  border-left: 3px solid #409eff;
+  border-left: 3px solid var(--pink-accent, #c97b8b);
 }
 
 .total-cost-icon {
-  background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+  background: var(--pink-accent);
   color: white;
 }
 
 .total-token-icon {
-  background: linear-gradient(135deg, #a55eea 0%, #8854d0 100%);
+  background: #b8a0c5;
   color: white;
 }
 
 .total-request-icon {
-  background: linear-gradient(135deg, #20bf6b 0%, #26de81 100%);
+  background: #a0c0b5;
   color: white;
 }
 
 .total-cache-icon {
-  background: linear-gradient(135deg, #fa8231 0%, #fd9644 100%);
+  background: #d4a88a;
   color: white;
 }
 
@@ -492,13 +511,13 @@ onMounted(() => {
 .stat-value {
   font-size: 24px;
   font-weight: bold;
-  color: #303133;
+  color: var(--pink-text);
   line-height: 1.2;
 }
 
 .stat-label {
   font-size: 14px;
-  color: #909399;
+  color: #6b6573;
   margin-top: 4px;
 }
 
@@ -512,7 +531,7 @@ onMounted(() => {
   text-align: center;
   padding: 20px;
   border-radius: 8px;
-  background: #f5f7fa;
+  background: var(--pink-accent-light, #faf2f4);
 }
 
 .account-stat.success {
@@ -542,26 +561,40 @@ onMounted(() => {
 .account-value {
   font-size: 32px;
   font-weight: bold;
-  color: #303133;
+  color: var(--pink-text);
 }
 
 .account-label {
   font-size: 14px;
-  color: #909399;
+  color: #6b6573;
   margin-top: 8px;
 }
 
 .resource-detail {
   margin-top: 10px;
   font-size: 12px;
-  color: #909399;
+  color: #6b6573;
   text-align: center;
 }
 
-.update-time {
-  text-align: right;
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.last-update-inline {
   font-size: 12px;
   color: #909399;
-  margin-top: 16px;
+}
+
+@keyframes refresh-pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.6; }
+  100% { opacity: 1; }
+}
+
+.refresh-flash {
+  animation: refresh-pulse 0.6s ease;
 }
 </style>

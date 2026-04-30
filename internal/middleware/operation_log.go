@@ -635,8 +635,7 @@ func descCookieAuth(c *gin.Context, body map[string]interface{}) string {
 	return "Cookie 认证"
 }
 
-// 敏感字段脱敏（password 不脱敏，用于安全审计查看登录尝试的密码）
-var sensitiveFields = []string{"token", "secret", "api_key", "session_key", "access_token", "refresh_token"}
+var sensitiveFields = []string{"password", "token", "secret", "api_key", "session_key", "access_token", "refresh_token"}
 
 func sanitizeBody(body map[string]interface{}) map[string]interface{} {
 	sanitized := make(map[string]interface{})
@@ -826,41 +825,19 @@ func OperationLogger() gin.HandlerFunc {
 			result = "失败"
 		}
 
-		// 登录操作时记录密码（用于安全审计）
-		if mapping.Action == model.ActionLogin && bodyMap != nil {
-			password := ""
-			if pwd, ok := bodyMap["password"].(string); ok {
-				password = pwd
-			}
-			fileLog.Info("[%s] %s | User: %s(ID:%d) | IP: %s | %s %s | Target: %s(ID:%d) | Password: %s | Result: %s | Duration: %dms",
-				opLog.Module,
-				opLog.Description,
-				usernameStr,
-				userIDUint,
-				c.ClientIP(),
-				method,
-				path,
-				opLog.TargetName,
-				opLog.TargetID,
-				password,
-				result,
-				opLog.Duration,
-			)
-		} else {
-			fileLog.Info("[%s] %s | User: %s(ID:%d) | IP: %s | %s %s | Target: %s(ID:%d) | Result: %s | Duration: %dms",
-				opLog.Module,
-				opLog.Description,
-				usernameStr,
-				userIDUint,
-				c.ClientIP(),
-				method,
-				path,
-				opLog.TargetName,
-				opLog.TargetID,
-				result,
-				opLog.Duration,
-			)
-		}
+		fileLog.Info("[%s] %s | User: %s(ID:%d) | IP: %s | %s %s | Target: %s(ID:%d) | Result: %s | Duration: %dms",
+			opLog.Module,
+			opLog.Description,
+			usernameStr,
+			userIDUint,
+			c.ClientIP(),
+			method,
+			path,
+			opLog.TargetName,
+			opLog.TargetID,
+			result,
+			opLog.Duration,
+		)
 
 		// 异步写入数据库
 		go repo.Create(opLog)

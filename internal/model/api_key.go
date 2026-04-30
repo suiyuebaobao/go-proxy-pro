@@ -39,13 +39,14 @@ type APIKey struct {
 	// 套餐绑定
 	UserPackageID *uint        `gorm:"index" json:"user_package_id,omitempty"`    // 绑定的用户套餐ID
 	UserPackage   *UserPackage `gorm:"foreignKey:UserPackageID" json:"user_package,omitempty"`
-	BillingType   string       `gorm:"size:20;default:quota" json:"billing_type"` // quota(额度) / subscription(订阅)
+	BillingType   string       `gorm:"size:20;default:quota" json:"billing_type"` // quota(额度) / subscription(订阅) / count(按次)
 
 	// 权限控制
 	AllowedPlatforms string `gorm:"size:100;default:all" json:"allowed_platforms"` // 允许的平台: all, claude, openai, gemini (逗号分隔)
 	AllowedModels    string `gorm:"type:text" json:"allowed_models,omitempty"`     // 允许的模型列表 (逗号分隔)
 	BlockedModels    string `gorm:"type:text" json:"blocked_models,omitempty"`     // 禁止的模型列表 (逗号分隔)
 	AllowedClients   string `gorm:"size:200" json:"allowed_clients,omitempty"`     // 允许的客户端类型 (逗号分隔, 如: claude_code,codex_cli)
+	AllowedIPs       string `gorm:"type:text" json:"allowed_ips,omitempty"`       // IP 白名单 (逗号分隔, 支持 CIDR, 如: 10.0.0.0/8,192.168.1.1)
 
 	// 限制配置
 	RateLimit     int        `gorm:"default:60" json:"rate_limit"`               // 每分钟请求限制

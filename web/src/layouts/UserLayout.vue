@@ -2,7 +2,7 @@
  * 文件作用：用户中心布局组件
  * 负责功能：
  *   - 用户中心页面框架
- *   - 顶部导航栏
+ *   - 顶部导航栏和主题切换
  *   - 侧边菜单
  *   - 内容区域
  * 重要程度：⭐⭐⭐⭐ 重要（用户界面框架）
@@ -14,10 +14,12 @@
       <div class="header-left">
         <div class="logo">
           <el-icon :size="24"><Monitor /></el-icon>
-          <span class="logo-text">AI Proxy 用户中心</span>
+          <span class="logo-text">{{ siteStore.siteName }} 用户中心</span>
         </div>
       </div>
       <div class="header-right">
+        <ThemeSwitcher />
+
         <el-dropdown @command="handleCommand">
           <span class="user-info">
             <el-avatar :size="32" class="avatar">
@@ -68,6 +70,10 @@
             <el-icon><Document /></el-icon>
             <template #title>使用记录</template>
           </el-menu-item>
+          <el-menu-item index="/user/api-docs" @mouseenter="prefetchFor('/user/api-docs')">
+            <el-icon><Reading /></el-icon>
+            <template #title>API 文档</template>
+          </el-menu-item>
         </el-menu>
 
         <div class="collapse-btn" @click="isCollapse = !isCollapse">
@@ -88,10 +94,15 @@
 import { ref, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
+import { useSiteStore } from '@/stores/site'
 import { prefetchChunk } from '@/prefetch'
+import ThemeSwitcher from '@/components/ThemeSwitcher.vue'
+
+const siteStore = useSiteStore()
+siteStore.fetchSiteName()
 import {
   Monitor, ArrowDown, User, Setting, SwitchButton,
-  DataAnalysis, Key, Box, Document, Expand, Fold
+  DataAnalysis, Key, Box, Document, Expand, Fold, Reading
 } from '@element-plus/icons-vue'
 
 const route = useRoute()
@@ -108,6 +119,7 @@ function prefetchFor(path) {
     '/user/api-keys': () => import('@/views/user/MyAPIKeys.vue'),
     '/user/packages': () => import('@/views/user/MyPackages.vue'),
     '/user/records': () => import('@/views/user/MyUsageRecords.vue'),
+    '/user/api-docs': () => import('@/views/user/ApiDocs.vue'),
     '/user/profile': () => import('@/views/Profile.vue'),
     '/admin/system-monitor': () => import('@/views/SystemMonitor.vue')
   }
@@ -137,16 +149,17 @@ const handleCommand = (command) => {
 <style scoped>
 .user-layout {
   height: 100vh;
-  background: #f5f7fa;
+  background: var(--pink-bg, #fdf8f9);
 }
 
 .header {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--pink-surface, #ffffff);
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0 20px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  padding: 0 24px;
+  border-bottom: 1px solid var(--pink-border, #f0dde2);
+  height: 60px;
 }
 
 .header-left {
@@ -157,9 +170,10 @@ const handleCommand = (command) => {
 .logo {
   display: flex;
   align-items: center;
-  color: white;
+  color: var(--pink-accent, #c97b8b);
   font-size: 18px;
-  font-weight: bold;
+  font-weight: 700;
+  letter-spacing: 0.5px;
 }
 
 .logo-text {
@@ -169,31 +183,33 @@ const handleCommand = (command) => {
 .header-right {
   display: flex;
   align-items: center;
+  gap: 8px;
 }
 
 .user-info {
   display: flex;
   align-items: center;
-  color: white;
+  color: var(--pink-text, #3a3045);
   cursor: pointer;
   padding: 8px 12px;
   border-radius: 8px;
-  transition: background 0.3s;
+  transition: background 0.2s;
 }
 
 .user-info:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--pink-accent-light, #faf2f4);
 }
 
 .avatar {
-  background: rgba(255, 255, 255, 0.3);
+  background: var(--pink-accent, #c97b8b);
   color: white;
-  font-weight: bold;
+  font-weight: 600;
 }
 
 .username {
   margin: 0 8px;
   font-size: 14px;
+  font-weight: 500;
 }
 
 .main-container {
@@ -201,8 +217,8 @@ const handleCommand = (command) => {
 }
 
 .aside {
-  background: white;
-  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.05);
+  background: var(--pink-surface, #ffffff);
+  border-right: 1px solid var(--pink-border, #f0dde2);
   display: flex;
   flex-direction: column;
   transition: width 0.3s;
@@ -217,23 +233,42 @@ const handleCommand = (command) => {
   width: 200px;
 }
 
+:deep(.el-menu-item) {
+  margin: 2px 8px;
+  border-radius: 8px;
+  height: 44px;
+  line-height: 44px;
+  transition: all 0.2s;
+}
+
+:deep(.el-menu-item:hover) {
+  background-color: var(--pink-accent-light, #faf2f4) !important;
+}
+
+:deep(.el-menu-item.is-active) {
+  background-color: var(--pink-accent-light, #faf2f4) !important;
+  color: var(--pink-accent, #c97b8b) !important;
+  font-weight: 600;
+  border-left: 3px solid var(--pink-accent, #c97b8b);
+}
+
 .collapse-btn {
   padding: 15px;
   text-align: center;
   cursor: pointer;
-  border-top: 1px solid #eee;
-  color: #909399;
-  transition: all 0.3s;
+  border-top: 1px solid var(--pink-border, #f0dde2);
+  color: var(--pink-text-secondary, #8b7d92);
+  transition: all 0.2s;
 }
 
 .collapse-btn:hover {
-  background: #f5f7fa;
-  color: #409eff;
+  background: var(--pink-accent-light, #faf2f4);
+  color: var(--pink-accent, #c97b8b);
 }
 
 .main {
   padding: 20px;
-  background: #f5f7fa;
+  background: var(--pink-bg, #fdf8f9);
   overflow-y: auto;
 }
 </style>

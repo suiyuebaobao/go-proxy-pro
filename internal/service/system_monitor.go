@@ -14,8 +14,12 @@ package service
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 	"os"
 	"runtime"
+	"strconv"
+	"sync"
 	"time"
 
 	"go-aiproxy/internal/cache"
@@ -38,8 +42,80 @@ type SystemMonitorService struct {
 	memoryCache     *cache.MemoryCache
 }
 
+// 后台 CPU 采样器（避免每次请求阻塞等待采样）
+var (
+	cachedCPUUsage float64
+	cpuSamplerOnce sync.Once
+)
+
+func startCPUSampler() {
+	cpuSamplerOnce.Do(func() {
+		go func() {
+			for {
+				if percents, err := cpu.Percent(2*time.Second, false); err == nil && len(percents) > 0 {
+					cachedCPUUsage = percents[0]
+				}
+				time.Sleep(3 * time.Second)
+			}
+		}()
+
+		// periodic resource alert check (every 60 seconds)
+		go func() {
+			time.Sleep(10 * time.Second)
+			for {
+				checkResourceAlerts()
+				time.Sleep(60 * time.Second)
+			}
+		}()
+	})
+}
+
+func checkResourceAlerts() {
+	alertSvc := GetAlertService()
+	alertRepo := repository.NewAlertRepository()
+
+	checkOne := func(conditionType string, currentValue float64) {
+		rules, err := alertRepo.GetEnabledRulesByCondition(conditionType)
+		if err != nil || len(rules) == 0 {
+			return
+		}
+		for _, rule := range rules {
+			threshold := 90.0
+			if rule.ConditionValue != "" {
+				var cv map[string]interface{}
+				if json.Unmarshal([]byte(rule.ConditionValue), &cv) == nil {
+					if t, ok := cv["threshold"]; ok {
+						switch v := t.(type) {
+						case float64:
+							threshold = v
+						case string:
+							if parsed, err := strconv.ParseFloat(v, 64); err == nil {
+								threshold = parsed
+							}
+						}
+					}
+				}
+			}
+			if currentValue >= threshold {
+				alertSvc.TriggerAlert(conditionType, fmt.Sprintf("当前 %.1f%% 超过阈值 %.0f%%", currentValue, threshold))
+				break
+			}
+		}
+	}
+
+	checkOne("cpu_high", cachedCPUUsage)
+
+	if vmem, err := mem.VirtualMemory(); err == nil {
+		checkOne("memory_high", vmem.UsedPercent)
+	}
+	if usage, err := disk.Usage("/"); err == nil {
+		checkOne("disk_high", usage.UsedPercent)
+	}
+}
+
 // NewSystemMonitorService 创建系统监控服务
 func NewSystemMonitorService() *SystemMonitorService {
+	startCPUSampler()
 	return &SystemMonitorService{
 		db:              repository.GetDB(),
 		accountRepo:     repository.NewAccountRepository(),
@@ -158,11 +234,9 @@ func (s *SystemMonitorService) GetMonitorData(ctx context.Context) (*MonitorData
 func (s *SystemMonitorService) GetSystemStats() SystemStats {
 	stats := SystemStats{}
 
-	// CPU
+	// CPU（使用后台采样器的缓存值，避免阻塞请求）
 	stats.CPUCores = runtime.NumCPU()
-	if cpuPercent, err := cpu.Percent(100*time.Millisecond, false); err == nil && len(cpuPercent) > 0 {
-		stats.CPUUsage = cpuPercent[0]
-	}
+	stats.CPUUsage = cachedCPUUsage
 
 	// 内存
 	if memInfo, err := mem.VirtualMemory(); err == nil {

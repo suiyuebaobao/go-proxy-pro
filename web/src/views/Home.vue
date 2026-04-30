@@ -13,7 +13,7 @@
     <header class="home-header">
       <div class="logo">
         <i class="fa-solid fa-atom"></i>
-        <span>Go-AIProxy</span>
+        <span>{{ siteStore.siteName }}</span>
       </div>
       <router-link to="/login" class="btn-login">
         <i class="fa-solid fa-right-to-bracket"></i>
@@ -105,7 +105,7 @@ export OPENAI_API_KEY="你的API_Key"</code></pre>
           </a>
         </p>
       </div>
-      <p class="copyright">&copy; 2025 Go-AIProxy. All rights reserved.</p>
+      <p class="copyright">&copy; 2025 {{ siteStore.siteName }}. All rights reserved.</p>
     </footer>
   </div>
 </template>
@@ -116,6 +116,10 @@ ensureFontAwesomeLoaded()
 
 import { ref, computed } from 'vue'
 import { ElMessage } from 'element-plus'
+import { useSiteStore } from '@/stores/site'
+
+const siteStore = useSiteStore()
+siteStore.fetchSiteName()
 
 // 获取当前 Base URL
 const baseUrl = ref(window.location.origin)
@@ -135,17 +139,17 @@ const copyText = (text) => {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background: #0f172a;
-  color: #e5e7eb;
+  background: var(--pink-bg);
+  color: var(--pink-text, #3a3045);
 }
 
-/* 头部 */
 .home-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1.5rem 2rem;
-  border-bottom: 1px solid rgba(99, 102, 241, 0.2);
+  padding: 1.5rem 2.5rem;
+  border-bottom: 1px solid var(--pink-border, #f0dde2);
+  background: var(--pink-surface);
 }
 
 .logo {
@@ -154,11 +158,12 @@ const copyText = (text) => {
   gap: 0.75rem;
   font-size: 1.5rem;
   font-weight: 700;
-  color: white;
+  color: var(--pink-text, #3a3045);
+  letter-spacing: 0.5px;
 }
 
 .logo i {
-  color: #a855f7;
+  color: var(--pink-accent, #c97b8b);
   font-size: 1.75rem;
 }
 
@@ -167,20 +172,18 @@ const copyText = (text) => {
   align-items: center;
   gap: 0.5rem;
   padding: 0.625rem 1.25rem;
-  background: linear-gradient(135deg, #a855f7 0%, #6366f1 100%);
+  background: var(--pink-accent, #c97b8b);
   color: white;
   text-decoration: none;
-  border-radius: 8px;
+  border-radius: 10px;
   font-weight: 500;
   transition: all 0.2s;
 }
 
 .btn-login:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(168, 85, 247, 0.4);
+  background: var(--pink-accent-hover, #b06b7a);
 }
 
-/* 主内容 */
 .main-content {
   flex: 1;
   display: flex;
@@ -198,19 +201,15 @@ const copyText = (text) => {
   font-size: 2.5rem;
   font-weight: 700;
   margin-bottom: 0.5rem;
-  background: linear-gradient(135deg, #a855f7 0%, #6366f1 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: var(--pink-text, #3a3045);
 }
 
 .subtitle {
-  color: #9ca3af;
+  color: var(--pink-text-secondary, #8b7d92);
   font-size: 1.125rem;
   margin-bottom: 3rem;
 }
 
-/* API 端点 */
 .api-section {
   margin-bottom: 3rem;
 }
@@ -218,15 +217,21 @@ const copyText = (text) => {
 .api-section h2 {
   font-size: 1.25rem;
   margin-bottom: 1.5rem;
-  color: white;
+  color: var(--pink-text, #3a3045);
+  font-weight: 600;
 }
 
 .endpoint-card {
-  background: rgba(30, 41, 59, 0.5);
-  border: 1px solid rgba(99, 102, 241, 0.2);
+  background: var(--pink-surface);
+  border: 1px solid var(--pink-border, #f0dde2);
   border-radius: 12px;
   padding: 1rem 1.25rem;
   margin-bottom: 1rem;
+  transition: border-color 0.2s;
+}
+
+.endpoint-card:hover {
+  border-color: var(--theme-card-hover-border);
 }
 
 .endpoint-header {
@@ -238,7 +243,7 @@ const copyText = (text) => {
 
 .platform-name {
   font-weight: 600;
-  color: #e5e7eb;
+  color: var(--pink-text, #3a3045);
 }
 
 .copy-btn {
@@ -246,9 +251,9 @@ const copyText = (text) => {
   align-items: center;
   gap: 0.375rem;
   padding: 0.375rem 0.75rem;
-  background: rgba(99, 102, 241, 0.2);
-  border: 1px solid rgba(99, 102, 241, 0.3);
-  color: #a855f7;
+  background: var(--pink-accent-light, #faf2f4);
+  border: 1px solid var(--pink-border, #f0dde2);
+  color: var(--pink-accent, #c97b8b);
   border-radius: 6px;
   font-size: 0.875rem;
   cursor: pointer;
@@ -256,22 +261,21 @@ const copyText = (text) => {
 }
 
 .copy-btn:hover {
-  background: rgba(99, 102, 241, 0.3);
-  border-color: rgba(99, 102, 241, 0.5);
+  background: #f4e5e9;
+  border-color: var(--theme-card-hover-border);
 }
 
 .endpoint-url {
   display: block;
-  background: rgba(15, 23, 42, 0.5);
+  background: var(--pink-accent-light, #faf2f4);
   padding: 0.75rem 1rem;
   border-radius: 8px;
-  color: #a855f7;
+  color: var(--pink-accent, #c97b8b);
   font-family: 'Monaco', 'Menlo', monospace;
   font-size: 0.938rem;
   overflow-x: auto;
 }
 
-/* 配置示例 */
 .config-section {
   margin-bottom: 3rem;
 }
@@ -279,12 +283,13 @@ const copyText = (text) => {
 .config-section h2 {
   font-size: 1.25rem;
   margin-bottom: 1rem;
-  color: white;
+  color: var(--pink-text, #3a3045);
+  font-weight: 600;
 }
 
 .code-block {
-  background: rgba(15, 23, 42, 0.8);
-  border: 1px solid rgba(99, 102, 241, 0.2);
+  background: var(--pink-surface);
+  border: 1px solid var(--pink-border, #f0dde2);
   border-radius: 12px;
   padding: 1.25rem;
   overflow-x: auto;
@@ -295,22 +300,22 @@ const copyText = (text) => {
 }
 
 .code-block code {
-  color: #e5e7eb;
+  color: var(--pink-text, #3a3045);
   font-family: 'Monaco', 'Menlo', monospace;
   font-size: 0.875rem;
   line-height: 1.7;
 }
 
-/* 登录提示 */
 .login-section {
   text-align: center;
   padding: 2rem;
-  background: rgba(30, 41, 59, 0.3);
+  background: var(--pink-surface);
+  border: 1px solid var(--pink-border, #f0dde2);
   border-radius: 12px;
 }
 
 .login-section > p {
-  color: #9ca3af;
+  color: var(--pink-text-secondary, #8b7d92);
   margin-bottom: 1rem;
 }
 
@@ -319,33 +324,32 @@ const copyText = (text) => {
   align-items: center;
   gap: 0.5rem;
   padding: 0.75rem 1.5rem;
-  background: linear-gradient(135deg, #a855f7 0%, #6366f1 100%);
+  background: var(--pink-accent, #c97b8b);
   color: white;
   text-decoration: none;
-  border-radius: 8px;
+  border-radius: 10px;
   font-weight: 500;
   transition: all 0.2s;
 }
 
 .btn-primary:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(168, 85, 247, 0.4);
+  background: var(--pink-accent-hover, #b06b7a);
 }
 
-/* 页脚 */
 .home-footer {
-  border-top: 1px solid rgba(99, 102, 241, 0.2);
+  border-top: 1px solid var(--pink-border, #f0dde2);
   padding: 3rem 2rem 2rem;
   text-align: center;
+  background: var(--pink-surface);
 }
 
 .contact-section h3 {
-  color: white;
+  color: var(--pink-text, #3a3045);
   margin-bottom: 1rem;
 }
 
 .wechat {
-  color: #9ca3af;
+  color: var(--pink-text-secondary, #8b7d92);
   font-size: 1rem;
   margin-bottom: 0.75rem;
   display: flex;
@@ -364,18 +368,17 @@ const copyText = (text) => {
   align-items: center;
   gap: 0.5rem;
   padding: 0.75rem 1.5rem;
-  background: linear-gradient(135deg, #a855f7 0%, #6366f1 100%);
+  background: var(--pink-accent, #c97b8b);
   color: white;
   text-decoration: none;
-  border-radius: 8px;
+  border-radius: 10px;
   font-weight: 500;
   margin-bottom: 1rem;
   transition: all 0.2s;
 }
 
 .qq-link:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(168, 85, 247, 0.4);
+  background: var(--pink-accent-hover, #b06b7a);
 }
 
 .footer-note {
@@ -383,22 +386,21 @@ const copyText = (text) => {
 }
 
 .footer-note a {
-  color: #6b7280;
+  color: var(--pink-text-secondary, #8b7d92);
   text-decoration: none;
   transition: color 0.2s;
 }
 
 .footer-note a:hover {
-  color: #a855f7;
+  color: var(--pink-accent, #c97b8b);
 }
 
 .copyright {
-  color: #6b7280;
+  color: var(--pink-text-secondary, #8b7d92);
   font-size: 0.875rem;
   margin-top: 1rem;
 }
 
-/* 响应式 */
 @media (max-width: 768px) {
   .home-header {
     padding: 1rem;

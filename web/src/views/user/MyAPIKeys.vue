@@ -96,11 +96,15 @@
             <el-option
               v-for="pkg in activePackages"
               :key="pkg.id"
-              :label="`${pkg.name} (${pkg.type === 'subscription' ? '订阅' : '额度'})`"
+              :label="`${pkg.name} (${({subscription:'订阅',quota:'额度',count:'按次'})[pkg.type] || pkg.type})`"
               :value="pkg.id"
             />
           </el-select>
           <div class="form-tip">不绑定套餐则使用默认计费</div>
+        </el-form-item>
+        <el-form-item label="IP 白名单">
+          <el-input v-model="createForm.allowed_ips" placeholder="逗号分隔，留空不限制，如：1.2.3.4,10.0.0.0/8" />
+          <div class="form-tip">仅允许指定 IP 使用此 Key，支持 CIDR</div>
         </el-form-item>
       </el-form>
       <template #footer>
@@ -173,7 +177,8 @@ const selectedKey = ref(null)
 
 const createForm = ref({
   name: '',
-  user_package_id: null
+  user_package_id: null,
+  allowed_ips: ''
 })
 
 const formatTime = (time) => {
@@ -200,7 +205,7 @@ const copyKey = async (key) => {
 const fetchApiKeys = async () => {
   loading.value = true
   try {
-    const res = await api.getApiKeys()
+    const res = await api.getAPIKeys()
     apiKeys.value = res.data || []
   } catch (e) {
     ElMessage.error('获取 API Key 列表失败')
@@ -231,7 +236,7 @@ const createKey = async () => {
       newKeyValue.value = res.data.key_full || res.data.key
       showCreateDialog.value = false
       showNewKeyDialog.value = true
-      createForm.value = { name: '', user_package_id: null }
+      createForm.value = { name: '', user_package_id: null, allowed_ips: '' }
       fetchApiKeys()
     } else {
       ElMessage.error(res.message || '创建失败')
@@ -279,7 +284,7 @@ onMounted(() => {
 
 .page-header h2 {
   margin: 0;
-  color: #303133;
+  color: var(--pink-text);
 }
 
 .key-display {
@@ -290,25 +295,25 @@ onMounted(() => {
 
 .key-display code {
   font-family: 'Consolas', 'Monaco', monospace;
-  background: #f5f7fa;
+  background: var(--pink-accent-light, #faf2f4);
   padding: 4px 8px;
-  border-radius: 4px;
+  border-radius: 6px;
   font-size: 13px;
 }
 
 .usage-stats {
   font-size: 12px;
-  color: #606266;
+  color: var(--el-text-color-regular);
   line-height: 1.6;
 }
 
 .text-muted {
-  color: #909399;
+  color: #6b6573;
 }
 
 .form-tip {
   font-size: 12px;
-  color: #909399;
+  color: #6b6573;
   margin-top: 4px;
 }
 
@@ -319,6 +324,6 @@ onMounted(() => {
 .cost-value {
   font-size: 18px;
   font-weight: bold;
-  color: #409eff;
+  color: var(--pink-accent, #c97b8b);
 }
 </style>

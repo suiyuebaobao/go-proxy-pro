@@ -36,6 +36,7 @@ func RegisterRoutes(r *gin.Engine) {
 	usageHandler := NewUsageHandler()
 	cacheHandler := NewCacheHandler()
 	operationLogHandler := NewOperationLogHandler()
+	alertHandler := NewAlertHandler()
 
 	// 模型管理
 	modelRepo := repository.NewAIModelRepository(repository.GetDB())
@@ -51,6 +52,10 @@ func RegisterRoutes(r *gin.Engine) {
 
 	captchaHandler := NewCaptchaHandler()
 
+	// 公开接口（无需认证）
+	configHandler := NewConfigHandler()
+	r.GET("/api/site-info", configHandler.GetSiteInfo)
+
 	auth := r.Group("/api/auth")
 	{
 		auth.GET("/captcha", captchaHandler.Generate)
@@ -62,6 +67,9 @@ func RegisterRoutes(r *gin.Engine) {
 	// ========== 代理转发接口 (需要 API Key 认证) ==========
 	proxyGroup := r.Group("")
 	proxyGroup.Use(middleware.APIKeyAuth())
+	proxyGroup.Use(middleware.IPAccessControl())        // IP 黑名单/白名单
+	proxyGroup.Use(middleware.RateLimiter())            // API Key 速率限制 (RPM/RPD)
+	proxyGroup.Use(middleware.QuotaCheck())             // 用量配额检查
 	proxyGroup.Use(middleware.ClientFilter())           // 客户端过滤
 	proxyGroup.Use(middleware.CheckAllowedClients())    // API Key 客户端限制检查
 	proxyGroup.Use(middleware.UserConcurrencyControl()) // 用户并发控制
@@ -227,6 +235,26 @@ func RegisterRoutes(r *gin.Engine) {
 				logs.GET("/summary", requestLogHandler.GetSummary)
 				logs.GET("/account-load", requestLogHandler.GetAccountLoadStats)
 				logs.GET("/usage-summary", usageHandler.AdminGetAllUsageSummary) // 所有用户使用汇总（MySQL）
+				logs.GET("/:id", requestLogHandler.GetDetail)                   // 日志详情（含完整请求/响应体）
+			}
+
+			// 图表统计数据
+			stats := admin.Group("/stats")
+			{
+				stats.GET("/daily-trend", usageHandler.AdminGetDailyTrend)
+				stats.GET("/model-distribution", usageHandler.AdminGetModelDistribution)
+				stats.GET("/hourly-trend", usageHandler.AdminGetHourlyTrend)
+			}
+
+			// 告警管理
+			alerts := admin.Group("/alerts")
+			{
+				alerts.GET("/rules", alertHandler.ListRules)
+				alerts.POST("/rules", alertHandler.CreateRule)
+				alerts.PUT("/rules/:id", alertHandler.UpdateRule)
+				alerts.DELETE("/rules/:id", alertHandler.DeleteRule)
+				alerts.POST("/rules/:id/test", alertHandler.TestSend)
+				alerts.GET("/logs", alertHandler.ListLogs)
 			}
 
 			// 操作日志
@@ -293,7 +321,6 @@ func RegisterRoutes(r *gin.Engine) {
 			}
 
 			// 系统配置管理
-			configHandler := NewConfigHandler()
 			configs := admin.Group("/configs")
 			{
 				configs.GET("", configHandler.GetAll)                           // 获取所有配置

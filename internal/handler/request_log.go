@@ -41,6 +41,9 @@ func (h *RequestLogHandler) List(c *gin.Context) {
 	if accountID, _ := strconv.ParseUint(c.Query("account_id"), 10, 32); accountID > 0 {
 		filters["account_id"] = uint(accountID)
 	}
+	if userID, _ := strconv.ParseUint(c.Query("user_id"), 10, 32); userID > 0 {
+		filters["user_id"] = uint(userID)
+	}
 	if platform := c.Query("platform"); platform != "" {
 		filters["platform"] = platform
 	}
@@ -49,6 +52,21 @@ func (h *RequestLogHandler) List(c *gin.Context) {
 	}
 	if success := c.Query("success"); success != "" {
 		filters["success"] = success == "true"
+	}
+	if statusCode := c.Query("status_code"); statusCode != "" {
+		if code, err := strconv.Atoi(statusCode); err == nil {
+			filters["status_code"] = code
+		}
+	}
+	if minDuration := c.Query("min_duration"); minDuration != "" {
+		if d, err := strconv.ParseInt(minDuration, 10, 64); err == nil {
+			filters["min_duration"] = d
+		}
+	}
+	if maxDuration := c.Query("max_duration"); maxDuration != "" {
+		if d, err := strconv.ParseInt(maxDuration, 10, 64); err == nil {
+			filters["max_duration"] = d
+		}
 	}
 	if startTime := c.Query("start_time"); startTime != "" {
 		if t, err := time.Parse(time.RFC3339, startTime); err == nil {
@@ -68,6 +86,23 @@ func (h *RequestLogHandler) List(c *gin.Context) {
 	}
 
 	response.SuccessWithPagination(c, logs, total, page, pageSize)
+}
+
+// GetDetail 获取单条请求日志详情（含完整请求体和响应体）
+func (h *RequestLogHandler) GetDetail(c *gin.Context) {
+	id, err := strconv.ParseUint(c.Param("id"), 10, 32)
+	if err != nil {
+		response.Error(c, http.StatusBadRequest, "无效的日志 ID")
+		return
+	}
+
+	log, err := h.repo.GetByID(uint(id))
+	if err != nil {
+		response.Error(c, http.StatusNotFound, "日志不存在")
+		return
+	}
+
+	response.Success(c, log)
 }
 
 // GetSummary 获取请求统计摘要

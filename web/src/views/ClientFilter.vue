@@ -284,13 +284,13 @@ onMounted(loadData)
 .switch-info h2 {
   margin: 0 0 5px 0;
   font-size: 18px;
-  color: #303133;
+  color: var(--pink-text);
 }
 
 .switch-info .description {
   margin: 0;
   font-size: 13px;
-  color: #909399;
+  color: #6b6573;
 }
 
 .clients-card, .mode-card, .test-card {
@@ -300,7 +300,7 @@ onMounted(loadData)
 .clients-card h3, .mode-card h3 {
   margin: 0 0 15px 0;
   font-size: 16px;
-  color: #303133;
+  color: var(--pink-text);
 }
 
 .client-list {
@@ -323,7 +323,7 @@ onMounted(loadData)
 }
 
 .client-item:hover {
-  border-color: #409eff;
+  border-color: var(--pink-accent, #c97b8b);
 }
 
 .client-item.enabled {
@@ -342,12 +342,12 @@ onMounted(loadData)
 
 .client-name {
   font-weight: 600;
-  color: #303133;
+  color: var(--pink-text);
 }
 
 .client-desc {
   font-size: 12px;
-  color: #909399;
+  color: #6b6573;
 }
 
 .check-icon {
@@ -371,14 +371,14 @@ onMounted(loadData)
 
 .mode-desc {
   font-size: 11px;
-  color: #909399;
+  color: #6b6573;
   margin-top: 2px;
 }
 
 .mode-detail {
   margin-top: 15px;
   padding: 10px 15px;
-  background: #f5f7fa;
+  background: var(--pink-accent-light, #faf2f4);
   border-radius: 6px;
   font-size: 13px;
 }

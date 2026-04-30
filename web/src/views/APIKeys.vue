@@ -36,9 +36,19 @@
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="rate_limit" label="限速" width="80">
+        <el-table-column label="RPM" width="70">
           <template #default="{ row }">
-            {{ row.rate_limit }}/分
+            {{ row.rate_limit > 0 ? row.rate_limit : '∞' }}
+          </template>
+        </el-table-column>
+        <el-table-column label="RPD" width="70">
+          <template #default="{ row }">
+            {{ row.daily_limit > 0 ? row.daily_limit : '∞' }}
+          </template>
+        </el-table-column>
+        <el-table-column label="IP白名单" width="100" show-overflow-tooltip>
+          <template #default="{ row }">
+            {{ row.allowed_ips || '不限' }}
           </template>
         </el-table-column>
         <el-table-column prop="request_count" label="请求数" width="80" />
@@ -256,7 +266,7 @@ onMounted(() => {
 }
 
 .page-header h2 {
-  color: #333;
+  color: var(--pink-text);
   margin: 0;
 }
 

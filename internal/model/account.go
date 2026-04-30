@@ -28,14 +28,50 @@ const (
 	AccountTypeGemini          = "gemini"            // Google Gemini OAuth
 	AccountTypeGeminiAPI       = "gemini-api"        // Gemini API Key
 	AccountTypeDroid           = "droid"             // Droid
+
+	// 国际平台（OpenAI 兼容）
+	AccountTypeXAI     = "xai"     // xAI (Grok)
+	AccountTypeMistral = "mistral" // Mistral AI
+	AccountTypeCohere  = "cohere"  // Cohere
+
+	// 中国平台（OpenAI 兼容）
+	AccountTypeDeepSeek = "deepseek" // 深度求索 DeepSeek
+	AccountTypeQwen     = "qwen"     // 阿里云 通义千问
+	AccountTypeGLM      = "glm"      // 智谱 GLM/ChatGLM
+	AccountTypeMoonshot = "moonshot" // 月之暗面 Kimi
+	AccountTypeDoubao   = "doubao"   // 字节跳动 豆包
+	AccountTypeBaichuan = "baichuan" // 百川智能
+	AccountTypeYi       = "yi"       // 零一万物
+	AccountTypeMiniMax  = "minimax"  // MiniMax
+	AccountTypeStepfun  = "stepfun"  // 阶跃星辰
+	AccountTypeSpark      = "spark"      // 科大讯飞 星火
+	AccountTypeSiliconFlow = "siliconflow" // 硅基流动
+
+	// 通用 OpenAI 兼容
+	AccountTypeCustom = "custom" // 自定义 OpenAI 兼容 API
 )
 
 // 平台常量
 const (
-	PlatformClaude = "claude"
-	PlatformOpenAI = "openai"
-	PlatformGemini = "gemini"
-	PlatformOther  = "other"
+	PlatformClaude   = "claude"
+	PlatformOpenAI   = "openai"
+	PlatformGemini   = "gemini"
+	PlatformXAI      = "xai"
+	PlatformMistral  = "mistral"
+	PlatformCohere   = "cohere"
+	PlatformDeepSeek = "deepseek"
+	PlatformQwen     = "qwen"
+	PlatformGLM      = "glm"
+	PlatformMoonshot = "moonshot"
+	PlatformDoubao   = "doubao"
+	PlatformBaichuan = "baichuan"
+	PlatformYi       = "yi"
+	PlatformMiniMax  = "minimax"
+	PlatformStepfun  = "stepfun"
+	PlatformSpark      = "spark"
+	PlatformSiliconFlow = "siliconflow"
+	PlatformCustom     = "custom"
+	PlatformOther    = "other"
 )
 
 // 账户状态常量
@@ -145,8 +181,63 @@ func GetPlatformByType(accountType string) string {
 		return PlatformOpenAI
 	case AccountTypeGemini, AccountTypeGeminiAPI:
 		return PlatformGemini
-	default:
+	case AccountTypeXAI:
+		return PlatformXAI
+	case AccountTypeMistral:
+		return PlatformMistral
+	case AccountTypeCohere:
+		return PlatformCohere
+	case AccountTypeDeepSeek:
+		return PlatformDeepSeek
+	case AccountTypeQwen:
+		return PlatformQwen
+	case AccountTypeGLM:
+		return PlatformGLM
+	case AccountTypeMoonshot:
+		return PlatformMoonshot
+	case AccountTypeDoubao:
+		return PlatformDoubao
+	case AccountTypeBaichuan:
+		return PlatformBaichuan
+	case AccountTypeYi:
+		return PlatformYi
+	case AccountTypeMiniMax:
+		return PlatformMiniMax
+	case AccountTypeStepfun:
+		return PlatformStepfun
+	case AccountTypeSpark:
+		return PlatformSpark
+	case AccountTypeSiliconFlow:
+		return PlatformSiliconFlow
+	case AccountTypeCustom:
+		return PlatformCustom
+	case AccountTypeDroid:
 		return PlatformOther
+	default:
+		return ""
+	}
+}
+
+// IsOpenAICompatibleType 检查账户类型是否为 OpenAI 兼容 API
+func IsOpenAICompatibleType(accountType string) bool {
+	switch accountType {
+	case AccountTypeOpenAI, AccountTypeXAI, AccountTypeMistral, AccountTypeCohere,
+		AccountTypeDeepSeek, AccountTypeQwen, AccountTypeGLM, AccountTypeMoonshot,
+		AccountTypeDoubao, AccountTypeBaichuan, AccountTypeYi, AccountTypeMiniMax,
+		AccountTypeStepfun, AccountTypeSpark, AccountTypeSiliconFlow, AccountTypeCustom:
+		return true
+	default:
+		return false
+	}
+}
+
+// OpenAICompatibleAccountTypes 返回所有 OpenAI 兼容的账户类型列表
+func OpenAICompatibleAccountTypes() []string {
+	return []string{
+		AccountTypeOpenAI, AccountTypeXAI, AccountTypeMistral, AccountTypeCohere,
+		AccountTypeDeepSeek, AccountTypeQwen, AccountTypeGLM, AccountTypeMoonshot,
+		AccountTypeDoubao, AccountTypeBaichuan, AccountTypeYi, AccountTypeMiniMax,
+		AccountTypeStepfun, AccountTypeSpark, AccountTypeSiliconFlow, AccountTypeCustom,
 	}
 }
 

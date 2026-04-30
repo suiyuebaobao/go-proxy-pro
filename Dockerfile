@@ -31,7 +31,7 @@ WORKDIR /app
 RUN apk add --no-cache ca-certificates tzdata
 
 # 复制二进制文件和前端资源
-COPY --from=builder /app/aiproxy /app/
+COPY --from=builder /app/bin/server /app/fuye
 COPY --from=builder /app/internal/handler/dist /app/internal/handler/dist/
 COPY --from=builder /app/configs /app/configs/
 
@@ -46,4 +46,4 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
   CMD wget --no-verbose --tries=1 --spider http://localhost:8080/health || exit 1
 
 # 运行应用
-CMD ["./aiproxy", "server"]
+CMD ["./fuye", "server"]

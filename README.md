@@ -1,6 +1,6 @@
 <div align="center">
 
-  # Go-AIProxy
+  # 叶渡AI Hub
 
   ### 🚀 企业级 AI API 代理服务
 
@@ -96,7 +96,7 @@
 ```bash
 # 克隆仓库
 git clone https://github.com/suiyuebaobao/go-proxy-pro.git
-cd go-proxy-pro/go-aiproxy
+cd go-proxy-pro
 
 # 启动服务（MySQL + 应用）
 docker-compose up -d
@@ -123,10 +123,10 @@ docker-compose down
 
 ```bash
 # 编译后端
-go build -o aiproxy ./cmd/server
+go build -o fuye ./cmd/server
 
 # 运行
-./aiproxy
+./fuye
 ```
 
 服务默认监听 `8080` 端口。
@@ -185,7 +185,7 @@ curl http://localhost:8080/responses \
 ## 📁 项目结构
 
 ```
-go-aiproxy/
+fuye/
 ├── cmd/server/          # 程序入口
 ├── internal/
 │   ├── handler/         # HTTP 处理器
@@ -230,16 +230,16 @@ go-aiproxy/
 | `DB_PORT` | `3306` | MySQL 端口 |
 | `DB_USER` | `root` | MySQL 用户名 |
 | `DB_PASSWORD` | - | MySQL 密码 |
-| `DB_NAME` | `aiproxy` | 数据库名 |
+| `DB_NAME` | `fuye` | 数据库名 |
 
 ### Docker Compose 变量
 
 | 变量名 | 默认值 | 说明 |
 |--------|--------|------|
-| `MYSQL_ROOT_PASSWORD` | `go-aiproxy-root` | MySQL root 密码 |
-| `MYSQL_DATABASE` | `aiproxy` | 数据库名 |
-| `MYSQL_USER` | `aiproxy` | MySQL 用户名 |
-| `MYSQL_PASSWORD` | `aiproxy-password` | MySQL 密码 |
+| `MYSQL_ROOT_PASSWORD` | `fuye-root` | MySQL root 密码 |
+| `MYSQL_DATABASE` | `fuye` | 数据库名 |
+| `MYSQL_USER` | `fuye` | MySQL 用户名 |
+| `MYSQL_PASSWORD` | `fuye-password` | MySQL 密码 |
 | `JWT_SECRET` | `change-in-production` | JWT 密钥 |
 
 ⚠️ **生产环境请修改所有默认密码！**
@@ -283,6 +283,6 @@ go-aiproxy/
 
   **本项目 95% 使用 GLM 配合 Claude Code 开发完成**
 
-  [⬆ 返回顶部](#go-aiproxy)
+  [⬆ 返回顶部](#叶渡ai-hub)
 
 </div>

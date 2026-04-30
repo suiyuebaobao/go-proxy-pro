@@ -78,8 +78,8 @@
             <div v-for="pkg in packages.slice(0, 3)" :key="pkg.id" class="package-item">
               <div class="package-info">
                 <div class="package-name">
-                  <el-tag :type="pkg.type === 'subscription' ? 'primary' : 'success'" size="small">
-                    {{ pkg.type === 'subscription' ? '订阅' : '额度' }}
+                  <el-tag :type="{subscription:'primary',quota:'success',count:'warning'}[pkg.type] || 'info'" size="small">
+                    {{ {subscription:'订阅',quota:'额度',count:'按次'}[pkg.type] || pkg.type }}
                   </el-tag>
                   <span>{{ pkg.name }}</span>
                 </div>
@@ -97,6 +97,16 @@
                 />
                 <div class="quota-text">
                   已用 ${{ pkg.quota_used?.toFixed(2) || '0' }} / ${{ pkg.quota_total?.toFixed(2) || '0' }}
+                </div>
+              </div>
+              <div class="package-quota" v-else-if="pkg.type === 'count'">
+                <el-progress
+                  :percentage="pkg.count_total > 0 ? Math.min(100, ((pkg.count_used || 0) / pkg.count_total) * 100) : 0"
+                  :color="getQuotaColor({quota_used: pkg.count_used || 0, quota_total: pkg.count_total || 0})"
+                  :stroke-width="8"
+                />
+                <div class="quota-text">
+                  已用 {{ pkg.count_used || 0 }} / {{ pkg.count_total || 0 }} 次
                 </div>
               </div>
               <div class="package-quota" v-else>
@@ -238,8 +248,7 @@ const getQuotaColor = (pkg) => {
 
 const fetchStats = async () => {
   try {
-    // 获取使用统计
-    const summaryRes = await api.getUserUsageSummary()
+    const summaryRes = await api.getMyUsageSummary()
     if (summaryRes.data) {
       stats.today_cost = summaryRes.data.today?.total_cost || 0
       stats.today_tokens = summaryRes.data.today?.total_tokens || 0
@@ -265,7 +274,7 @@ const fetchPackages = async () => {
 
 const fetchApiKeys = async () => {
   try {
-    const res = await api.getApiKeys()
+    const res = await api.getAPIKeys()
     apiKeys.value = res.data || []
     stats.api_key_count = apiKeys.value.length
   } catch (e) {
@@ -293,12 +302,12 @@ onMounted(() => {
 .welcome-section h1 {
   margin: 0;
   font-size: 28px;
-  color: #303133;
+  color: var(--pink-text);
 }
 
 .subtitle {
   margin: 8px 0 0;
-  color: #909399;
+  color: #6b6573;
 }
 
 .stat-cards {
@@ -330,19 +339,19 @@ onMounted(() => {
 }
 
 .stat-icon.cost {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--pink-accent);
 }
 
 .stat-icon.tokens {
-  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  background: #d4a0ac;
 }
 
 .stat-icon.requests {
-  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+  background: #b8a0c5;
 }
 
 .stat-icon.keys {
-  background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+  background: #a0c0b5;
 }
 
 .stat-info {
@@ -352,12 +361,12 @@ onMounted(() => {
 .stat-value {
   font-size: 24px;
   font-weight: bold;
-  color: #303133;
+  color: var(--pink-text);
 }
 
 .stat-label {
   font-size: 14px;
-  color: #909399;
+  color: #6b6573;
   margin-top: 4px;
 }
 
@@ -392,7 +401,7 @@ onMounted(() => {
 
 .package-item, .api-key-item {
   padding: 12px;
-  background: #f5f7fa;
+  background: var(--pink-accent-light, #faf2f4);
   border-radius: 8px;
 }
 
@@ -416,7 +425,7 @@ onMounted(() => {
 
 .quota-text {
   font-size: 12px;
-  color: #909399;
+  color: #6b6573;
   margin-top: 4px;
   text-align: right;
 }
@@ -425,11 +434,11 @@ onMounted(() => {
   display: flex;
   justify-content: space-between;
   font-size: 13px;
-  color: #606266;
+  color: var(--el-text-color-regular);
 }
 
 .expire-date {
-  color: #909399;
+  color: #6b6573;
 }
 
 .key-name {
@@ -438,7 +447,7 @@ onMounted(() => {
 
 .key-prefix {
   font-size: 12px;
-  color: #909399;
+  color: #6b6573;
   font-family: monospace;
 }
 
@@ -463,12 +472,12 @@ onMounted(() => {
 .total-value {
   font-size: 28px;
   font-weight: bold;
-  color: #409eff;
+  color: var(--pink-accent, #c97b8b);
 }
 
 .total-label {
   font-size: 14px;
-  color: #909399;
+  color: #6b6573;
   margin-top: 8px;
 }
 

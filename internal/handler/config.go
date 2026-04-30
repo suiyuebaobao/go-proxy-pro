@@ -108,6 +108,17 @@ func (h *ConfigHandler) notifyConfigChange(configs map[string]string) {
 	}
 }
 
+// GetSiteInfo 获取站点公开信息（无需认证）
+func (h *ConfigHandler) GetSiteInfo(c *gin.Context) {
+	siteName := h.configService.GetString(model.ConfigSiteName)
+	if siteName == "" {
+		siteName = "叶渡AI Hub"
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"site_name": siteName,
+	})
+}
+
 // ConfigChangeCallback 配置变更回调函数类型
 type ConfigChangeCallback func(key, value string)
 

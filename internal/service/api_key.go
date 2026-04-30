@@ -51,6 +51,7 @@ type CreateAPIKeyRequest struct {
 	UserPackageID    uint       `json:"user_package_id" binding:"required"` // 必须绑定用户套餐
 	AllowedPlatforms string     `json:"allowed_platforms"`
 	AllowedModels    string     `json:"allowed_models"`
+	AllowedIPs       string     `json:"allowed_ips"`
 	RateLimit        int        `json:"rate_limit"`
 	DailyLimit       int        `json:"daily_limit"`
 	MonthlyQuota     float64    `json:"monthly_quota"`
@@ -117,6 +118,7 @@ func (s *APIKeyService) Create(userID uint, req *CreateAPIKeyRequest) (*CreateAP
 		UserPackageID:    &packageID,
 		AllowedPlatforms: allowedPlatforms,
 		AllowedModels:    req.AllowedModels,
+		AllowedIPs:       req.AllowedIPs,
 		RateLimit:        rateLimit,
 		DailyLimit:       req.DailyLimit,
 		MonthlyQuota:     req.MonthlyQuota,
@@ -222,6 +224,7 @@ type UpdateAPIKeyRequest struct {
 	Name             string     `json:"name"`
 	AllowedPlatforms string     `json:"allowed_platforms"`
 	AllowedModels    string     `json:"allowed_models"`
+	AllowedIPs       string     `json:"allowed_ips"`
 	RateLimit        int        `json:"rate_limit"`
 	DailyLimit       int        `json:"daily_limit"`
 	MonthlyQuota     float64    `json:"monthly_quota"`
@@ -250,6 +253,8 @@ func (s *APIKeyService) Update(id uint, userID uint, req *UpdateAPIKeyRequest) (
 	if req.AllowedModels != "" {
 		key.AllowedModels = req.AllowedModels
 	}
+	// AllowedIPs can be empty string (meaning "no restriction"), so always update
+	key.AllowedIPs = req.AllowedIPs
 	if req.RateLimit > 0 {
 		key.RateLimit = req.RateLimit
 	}
@@ -328,6 +333,7 @@ func (s *APIKeyService) AdminCreate(userID uint, req *CreateAPIKeyRequest) (*Cre
 		UserPackageID:    &packageID,
 		AllowedPlatforms: allowedPlatforms,
 		AllowedModels:    req.AllowedModels,
+		AllowedIPs:       req.AllowedIPs,
 		RateLimit:        rateLimit,
 		DailyLimit:       req.DailyLimit,
 		MonthlyQuota:     req.MonthlyQuota,

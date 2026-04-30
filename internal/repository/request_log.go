@@ -45,8 +45,20 @@ func (r *RequestLogRepository) List(page, pageSize int, filters map[string]inter
 	if modelName, ok := filters["model"].(string); ok && modelName != "" {
 		query = query.Where("model LIKE ?", "%"+modelName+"%")
 	}
+	if userID, ok := filters["user_id"].(uint); ok && userID > 0 {
+		query = query.Where("user_id = ?", userID)
+	}
 	if success, ok := filters["success"].(bool); ok {
 		query = query.Where("success = ?", success)
+	}
+	if statusCode, ok := filters["status_code"].(int); ok {
+		query = query.Where("status_code = ?", statusCode)
+	}
+	if minDur, ok := filters["min_duration"].(int64); ok {
+		query = query.Where("duration >= ?", minDur)
+	}
+	if maxDur, ok := filters["max_duration"].(int64); ok {
+		query = query.Where("duration <= ?", maxDur)
 	}
 	if startTime, ok := filters["start_time"].(time.Time); ok {
 		query = query.Where("created_at >= ?", startTime)
@@ -58,12 +70,24 @@ func (r *RequestLogRepository) List(page, pageSize int, filters map[string]inter
 	query.Count(&total)
 
 	offset := (page - 1) * pageSize
-	err := query.Preload("Account").Offset(offset).Limit(pageSize).Order("created_at DESC").Find(&logs).Error
+	err := query.Preload("Account").Offset(offset).Limit(pageSize).Order("created_at DESC").
+		Select("id, account_id, user_id, platform, model, endpoint, method, path, request_ip, user_agent, session_id, input_tokens, output_tokens, cache_creation_input_tokens, cache_read_input_tokens, total_tokens, input_cost, output_cost, cache_create_cost, cache_read_cost, total_cost, api_key_id, status_code, success, error, duration, upstream_status_code, upstream_error, created_at").
+		Find(&logs).Error
 	if err != nil {
 		return nil, 0, err
 	}
 
 	return logs, total, nil
+}
+
+// GetByID 获取单条日志详情（含完整请求体/响应体）
+func (r *RequestLogRepository) GetByID(id uint) (*model.RequestLog, error) {
+	var log model.RequestLog
+	err := r.db.Preload("Account").First(&log, id).Error
+	if err != nil {
+		return nil, err
+	}
+	return &log, nil
 }
 
 func (r *RequestLogRepository) GetSummary(startTime, endTime time.Time) (*model.RequestLogSummary, error) {
@@ -189,4 +213,27 @@ func (r *RequestLogRepository) GetAccountsTotalCost(accountIDs []uint) (map[uint
 	}
 
 	return costMap, nil
+}
+
+// HourlyTrendItem 小时趋势数据
+type HourlyTrendItem struct {
+	Hour         string  `json:"hour"`
+	RequestCount int64   `json:"request_count"`
+	TotalTokens  int64   `json:"total_tokens"`
+	TotalCost    float64 `json:"total_cost"`
+}
+
+// GetHourlyTrend 获取最近 24 小时逐小时趋势
+func (r *RequestLogRepository) GetHourlyTrend() ([]HourlyTrendItem, error) {
+	var items []HourlyTrendItem
+	since := time.Now().Add(-24 * time.Hour)
+
+	err := r.db.Model(&model.RequestLog{}).
+		Select("DATE_FORMAT(created_at, '%Y-%m-%d %H:00') as hour, COUNT(*) as request_count, COALESCE(SUM(total_tokens), 0) as total_tokens, COALESCE(SUM(total_cost), 0) as total_cost").
+		Where("created_at >= ?", since).
+		Group("hour").
+		Order("hour ASC").
+		Scan(&items).Error
+
+	return items, err
 }

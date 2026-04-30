@@ -306,21 +306,35 @@ func (r *RetryableRequest) ExecuteWithRetry(
 		r.Scheduler.MarkAccountError(lastAccount.ID, lastAccount.Type, lastErr)
 	}
 
+	var lastAccountID uint
+	var lastAccountName string
+	if lastAccount != nil {
+		lastAccountID = lastAccount.ID
+		lastAccountName = lastAccount.Name
+	}
+
+	errMsg := "unknown error"
+	if lastErr != nil {
+		errMsg = lastErr.Error()
+	} else {
+		lastErr = ErrAllAccountsFailed
+	}
+
 	log.ErrorZ("代理请求失败-重试耗尽",
 		logger.String("model", modelName),
-		logger.Uint("last_account_id", lastAccount.ID),
-		logger.String("last_account_name", lastAccount.Name),
+		logger.Uint("last_account_id", lastAccountID),
+		logger.String("last_account_name", lastAccountName),
 		logger.Uint("user_id", r.UserID),
 		logger.Uint("api_key_id", r.APIKeyID),
 		logger.String("client_ip", r.ClientIP),
-		logger.String("error", lastErr.Error()),
+		logger.String("error", errMsg),
 		logger.Duration("duration", time.Since(startTime)),
 		logger.Int("attempts", r.Config.MaxRetries+1),
 	)
 
 	return &ExecuteResult{
 		Response:  lastResp,
-		AccountID: lastAccount.ID,
+		AccountID: lastAccountID,
 	}, lastErr
 }
 
@@ -519,14 +533,28 @@ func (r *RetryableRequest) ExecuteStreamWithRetry(
 		r.Scheduler.MarkAccountError(lastAccount.ID, lastAccount.Type, lastErr)
 	}
 
+	var lastAccountID uint
+	var lastAccountName string
+	if lastAccount != nil {
+		lastAccountID = lastAccount.ID
+		lastAccountName = lastAccount.Name
+	}
+
+	errMsg := "unknown error"
+	if lastErr != nil {
+		errMsg = lastErr.Error()
+	} else {
+		lastErr = ErrAllAccountsFailed
+	}
+
 	log.ErrorZ("流式代理请求失败-重试耗尽",
 		logger.String("model", modelName),
-		logger.Uint("last_account_id", lastAccount.ID),
-		logger.String("last_account_name", lastAccount.Name),
+		logger.Uint("last_account_id", lastAccountID),
+		logger.String("last_account_name", lastAccountName),
 		logger.Uint("user_id", r.UserID),
 		logger.Uint("api_key_id", r.APIKeyID),
 		logger.String("client_ip", r.ClientIP),
-		logger.String("error", lastErr.Error()),
+		logger.String("error", errMsg),
 		logger.Duration("duration", time.Since(startTime)),
 		logger.Int("attempts", r.Config.MaxRetries+1),
 	)

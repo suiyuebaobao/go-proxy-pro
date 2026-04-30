@@ -4,7 +4,7 @@
 
 ## 项目概述
 
-Go-AIProxy 是一个企业级 AI API 代理服务，提供统一的多平台 AI API（Claude、OpenAI、Gemini）访问接口，支持账户池管理、负载均衡、计费和监控功能。
+叶渡AI Hub 是一个企业级 AI API 代理服务，提供统一的多平台 AI API（Claude、OpenAI、Gemini）访问接口，支持账户池管理、负载均衡、计费和监控功能。
 
 **技术架构**：Go 后端 (Gin) + Vue 3 前端 (Element Plus) + MySQL 8.0
 
@@ -347,7 +347,7 @@ type Adapter interface {
 ## 目录结构
 
 ```
-go-aiproxy/
+fuye/
 ├── cmd/server/              # 程序入口
 ├── internal/
 │   ├── handler/             # HTTP 处理器（平台路由）
@@ -447,7 +447,7 @@ go-aiproxy/
 
 ## 开发流程
 
-1. 启动 MySQL：确保数据库 `aiproxy` 存在
+1. 启动 MySQL：确保数据库 `fuye` 存在
 2. 如需要，配置 `configs/config.yaml`
 3. 运行后端：`make run`（端口 8080）
 4. 运行前端：`make web-dev`（端口 3000，代理到 8080）

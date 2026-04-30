@@ -636,7 +636,7 @@ onMounted(() => {
 }
 
 .page-header h2 {
-  color: #333;
+  color: var(--pink-text);
   margin: 0;
 }
 
@@ -675,7 +675,7 @@ onMounted(() => {
 }
 
 .file-name .el-icon {
-  color: #909399;
+  color: #6b6573;
 }
 
 .log-content-card {
@@ -692,7 +692,7 @@ onMounted(() => {
 
 .filename {
   font-weight: bold;
-  color: #409eff;
+  color: var(--pink-accent, #c97b8b);
 }
 
 .header-tools {

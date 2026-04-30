@@ -67,13 +67,13 @@ type RegisterRequest struct {
 
 // AdminCreateUserRequest 管理员创建用户请求
 type AdminCreateUserRequest struct {
-	Username       string  `json:"username" binding:"required,min=3,max=50"`
-	Password       string  `json:"password" binding:"required,min=6"`
-	Email          string  `json:"email" binding:"omitempty,email"`
-	Role           string  `json:"role" binding:"omitempty,oneof=admin user"`
-	Status         string  `json:"status" binding:"omitempty,oneof=active disabled"`
-	PriceRate      float64 `json:"price_rate"`
-	MaxConcurrency int     `json:"max_concurrency"`
+	Username       string   `json:"username" binding:"required,min=3,max=50"`
+	Password       string   `json:"password" binding:"required,min=6"`
+	Email          string   `json:"email" binding:"omitempty,email"`
+	Role           string   `json:"role" binding:"omitempty,oneof=admin user"`
+	Status         string   `json:"status" binding:"omitempty,oneof=active disabled"`
+	PriceRate      *float64 `json:"price_rate"`
+	MaxConcurrency int      `json:"max_concurrency"`
 }
 
 type UpdateUserRequest struct {
@@ -183,9 +183,9 @@ func (s *UserService) AdminCreateUser(req *AdminCreateUserRequest) (*model.User,
 	if status == "" {
 		status = "active"
 	}
-	priceRate := req.PriceRate
-	if priceRate == 0 {
-		priceRate = 1.0
+	priceRate := 1.0
+	if req.PriceRate != nil {
+		priceRate = *req.PriceRate
 	}
 	maxConcurrency := req.MaxConcurrency
 	if maxConcurrency <= 0 {

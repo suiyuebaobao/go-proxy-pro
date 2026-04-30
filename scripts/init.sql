@@ -1,4 +1,4 @@
--- Go-AIProxy Database Initialization Script
+-- 叶渡AI Hub Database Initialization Script
 -- This script is automatically run by MySQL on first container start
 -- via docker-entrypoint-initdb.d/
 
@@ -25,4 +25,4 @@
 -- - model_mappings
 
 -- Set character set and collation for the database
-ALTER DATABASE aiproxy CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+ALTER DATABASE fuye CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;

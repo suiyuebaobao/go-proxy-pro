@@ -112,6 +112,6 @@ async function handleChangePassword() {
 <style scoped>
 .profile-page h2 {
   margin-bottom: 20px;
-  color: #333;
+  color: var(--pink-text);
 }
 </style>

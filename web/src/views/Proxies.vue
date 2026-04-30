@@ -577,15 +577,15 @@ onMounted(() => {
   color: white;
   font-size: 14px;
   flex-shrink: 0;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--pink-accent);
 }
 
 .proxy-icon.https {
-  background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+  background: #a0c0b5;
 }
 
 .proxy-icon.socks5 {
-  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  background: #b8a0c5;
 }
 
 .proxy-info {
@@ -639,7 +639,7 @@ onMounted(() => {
 
 .form-tip {
   font-size: 12px;
-  color: #909399;
+  color: #6b6573;
   margin-top: 4px;
 }
 </style>

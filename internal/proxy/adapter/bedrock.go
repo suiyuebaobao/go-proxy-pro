@@ -207,7 +207,7 @@ func (a *BedrockAdapter) SendStream(ctx context.Context, account *model.Account,
 	log.Debug("Bedrock Stream 请求开始 - URL: %s, AccountID: %d, Model: %s, Region: %s",
 		url, account.ID, req.Model, account.AWSRegion)
 
-	client := GetHTTPClient(account)
+	client := GetStreamHTTPClient(account)
 	resp, err := client.Do(httpReq)
 	if err != nil {
 		log.Error("Bedrock Stream 请求失败 - 网络错误: %v", err)
@@ -391,7 +391,7 @@ func (a *BedrockAdapter) signRequest(req *http.Request, body []byte, account *mo
 	if region == "" {
 		region = "us-east-1"
 	}
-	service := "bedrock"
+	service := "bedrock-runtime"
 
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("X-Amz-Date", amzDate)

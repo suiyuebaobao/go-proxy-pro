@@ -3,7 +3,7 @@
  * 负责功能：
  *   - 显示用户的所有套餐
  *   - 套餐详情和使用情况
- *   - 额度/订阅进度展示
+ *   - 额度/订阅/按次进度展示
  * 重要程度：⭐⭐⭐⭐ 重要（用户核心功能）
 -->
 <template>
@@ -26,8 +26,8 @@
         <template #header>
           <div class="card-header">
             <div class="package-title">
-              <el-tag :type="pkg.type === 'subscription' ? 'primary' : 'success'" size="small">
-                {{ pkg.type === 'subscription' ? '订阅套餐' : '额度套餐' }}
+              <el-tag :type="typeTagMap[pkg.type]?.tagType || 'info'" size="small">
+                {{ typeTagMap[pkg.type]?.label || pkg.type }}
               </el-tag>
               <span class="package-name">{{ pkg.name }}</span>
             </div>
@@ -37,8 +37,31 @@
           </div>
         </template>
 
+        <!-- 按次套餐 -->
+        <div v-if="pkg.type === 'count'" class="package-content">
+          <div class="quota-section">
+            <div class="quota-header">
+              <span>请求次数</span>
+              <span class="quota-percentage">{{ getCountPercentage(pkg).toFixed(1) }}%</span>
+            </div>
+            <el-progress
+              :percentage="getCountPercentage(pkg)"
+              :color="getProgressColor(getCountPercentage(pkg))"
+              :stroke-width="12"
+              :show-text="false"
+            />
+            <div class="quota-detail">
+              <span>已用: {{ pkg.count_used || 0 }} 次</span>
+              <span>总计: {{ pkg.count_total || 0 }} 次</span>
+            </div>
+            <div class="quota-remaining count-remaining">
+              剩余次数: <strong>{{ (pkg.count_total || 0) - (pkg.count_used || 0) }}</strong> 次
+            </div>
+          </div>
+        </div>
+
         <!-- 额度套餐 -->
-        <div v-if="pkg.type === 'quota'" class="package-content">
+        <div v-else-if="pkg.type === 'quota'" class="package-content">
           <div class="quota-section">
             <div class="quota-header">
               <span>额度使用</span>
@@ -61,7 +84,7 @@
         </div>
 
         <!-- 订阅套餐 -->
-        <div v-else class="package-content">
+        <div v-else-if="pkg.type === 'subscription'" class="package-content">
           <div class="subscription-section">
             <!-- 日额度 -->
             <div class="limit-item" v-if="pkg.daily_quota > 0">
@@ -142,6 +165,12 @@ import { Refresh, Calendar, Timer, Clock, Check } from '@element-plus/icons-vue'
 const loading = ref(false)
 const packages = ref([])
 
+const typeTagMap = {
+  subscription: { tagType: 'primary', label: '订阅套餐' },
+  quota: { tagType: 'success', label: '额度套餐' },
+  count: { tagType: 'warning', label: '按次套餐' },
+}
+
 const formatDate = (date) => {
   if (!date) return '-'
   return new Date(date).toLocaleDateString('zh-CN')
@@ -168,6 +197,11 @@ const getStatusText = (status) => {
 const getQuotaPercentage = (pkg) => {
   if (!pkg.quota_total || pkg.quota_total === 0) return 0
   return Math.min(100, (pkg.quota_used / pkg.quota_total) * 100)
+}
+
+const getCountPercentage = (pkg) => {
+  if (!pkg.count_total || pkg.count_total === 0) return 0
+  return Math.min(100, ((pkg.count_used || 0) / pkg.count_total) * 100)
 }
 
 const getUsagePercentage = (used, total) => {
@@ -221,7 +255,7 @@ onMounted(() => {
 
 .page-header h2 {
   margin: 0;
-  color: #303133;
+  color: var(--pink-text);
 }
 
 .packages-grid {
@@ -259,7 +293,7 @@ onMounted(() => {
 .package-name {
   font-size: 16px;
   font-weight: 600;
-  color: #303133;
+  color: var(--pink-text);
 }
 
 .package-content {
@@ -275,12 +309,12 @@ onMounted(() => {
   justify-content: space-between;
   margin-bottom: 8px;
   font-size: 14px;
-  color: #606266;
+  color: var(--el-text-color-regular);
 }
 
 .quota-percentage {
   font-weight: bold;
-  color: #409eff;
+  color: var(--pink-accent, #c97b8b);
 }
 
 .quota-detail {
@@ -288,7 +322,7 @@ onMounted(() => {
   justify-content: space-between;
   margin-top: 8px;
   font-size: 13px;
-  color: #909399;
+  color: #6b6573;
 }
 
 .quota-remaining {
@@ -303,6 +337,11 @@ onMounted(() => {
 
 .quota-remaining strong {
   font-size: 20px;
+}
+
+.count-remaining {
+  background: #fdf6ec;
+  color: #e6a23c;
 }
 
 .limit-item {
@@ -336,7 +375,7 @@ onMounted(() => {
   align-items: center;
   gap: 8px;
   font-size: 13px;
-  color: #909399;
+  color: #6b6573;
   margin-bottom: 8px;
 }
 

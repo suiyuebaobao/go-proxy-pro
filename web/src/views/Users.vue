@@ -226,8 +226,8 @@
             <el-table-column prop="name" label="套餐名称" width="120" />
             <el-table-column prop="type" label="类型" width="80">
               <template #default="{ row }">
-                <el-tag :type="row.type === 'subscription' ? 'primary' : 'success'" size="small">
-                  {{ row.type === 'subscription' ? '订阅' : '额度' }}
+                <el-tag :type="pkgTypeTag(row.type)" size="small">
+                  {{ pkgTypeLabel(row.type) }}
                 </el-tag>
               </template>
             </el-table-column>
@@ -246,6 +246,17 @@
                     <span v-if="row.weekly_quota > 0">周: ${{ row.weekly_used?.toFixed(2) || '0.00' }}/${{ row.weekly_quota }}</span>
                     <span v-if="row.monthly_quota > 0">月: ${{ row.monthly_used?.toFixed(2) || '0.00' }}/${{ row.monthly_quota }}</span>
                     <span v-if="!row.daily_quota && !row.weekly_quota && !row.monthly_quota" class="unlimited">无限额</span>
+                  </div>
+                </template>
+                <template v-else-if="row.type === 'count'">
+                  <div>
+                    <span>{{ row.count_used || 0 }} / {{ row.count_total || 0 }} 次</span>
+                    <el-progress
+                      :percentage="row.count_total > 0 ? Math.min(100, ((row.count_used || 0) / row.count_total) * 100) : 0"
+                      :status="(row.count_used || 0) >= (row.count_total || 0) ? 'exception' : ''"
+                      :stroke-width="4"
+                      style="margin-top: 4px"
+                    />
                   </div>
                 </template>
                 <template v-else>
@@ -301,8 +312,8 @@
           <template #default="{ row }">
             <div v-if="row.user_package">
               <div>{{ row.user_package.name }}</div>
-              <el-tag :type="row.billing_type === 'subscription' ? 'primary' : 'success'" size="small">
-                {{ row.billing_type === 'subscription' ? '订阅' : '额度' }}
+              <el-tag :type="pkgTypeTag(row.billing_type)" size="small">
+                {{ pkgTypeLabel(row.billing_type) }}
               </el-tag>
             </div>
             <el-tag v-else type="info" size="small">未绑定</el-tag>
@@ -356,7 +367,7 @@
             <el-option
               v-for="pkg in userPackagesForKey"
               :key="pkg.id"
-              :label="`${pkg.name} (${pkg.type === 'subscription' ? '订阅' : '额度'})`"
+              :label="`${pkg.name} (${pkgTypeLabel(pkg.type)})`"
               :value="pkg.id"
             />
           </el-select>
@@ -365,9 +376,23 @@
         <el-form-item label="允许的平台">
           <el-select v-model="createKeyForm.allowed_platforms" style="width: 100%">
             <el-option label="全部平台" value="all" />
-            <el-option label="仅 Claude" value="claude" />
-            <el-option label="仅 OpenAI" value="openai" />
-            <el-option label="仅 Gemini" value="gemini" />
+            <el-option label="Claude" value="claude" />
+            <el-option label="OpenAI" value="openai" />
+            <el-option label="Gemini" value="gemini" />
+            <el-option label="DeepSeek" value="deepseek" />
+            <el-option label="通义千问" value="qwen" />
+            <el-option label="智谱 GLM" value="glm" />
+            <el-option label="Moonshot" value="moonshot" />
+            <el-option label="豆包" value="doubao" />
+            <el-option label="百川" value="baichuan" />
+            <el-option label="零一万物" value="yi" />
+            <el-option label="MiniMax" value="minimax" />
+            <el-option label="阶跃星辰" value="stepfun" />
+            <el-option label="讯飞星火" value="spark" />
+            <el-option label="xAI" value="xai" />
+            <el-option label="Mistral" value="mistral" />
+            <el-option label="Cohere" value="cohere" />
+            <el-option label="硅基流动" value="siliconflow" />
           </el-select>
         </el-form-item>
         <el-row :gutter="16">
@@ -419,8 +444,8 @@
         <el-table-column prop="name" label="套餐名称" width="120" />
         <el-table-column prop="type" label="类型" width="80">
           <template #default="{ row }">
-            <el-tag :type="row.type === 'subscription' ? 'primary' : 'success'" size="small">
-              {{ row.type === 'subscription' ? '订阅' : '额度' }}
+            <el-tag :type="pkgTypeTag(row.type)" size="small">
+              {{ pkgTypeLabel(row.type) }}
             </el-tag>
           </template>
         </el-table-column>
@@ -451,6 +476,15 @@
                   </span>
                 </div>
               </div>
+            </template>
+            <template v-else-if="row.type === 'count'">
+              <span>次数: {{ row.count_used || 0 }} / {{ row.count_total || 0 }} 次</span>
+              <el-progress
+                :percentage="row.count_total > 0 ? Math.min(100, ((row.count_used || 0) / row.count_total) * 100) : 0"
+                :status="(row.count_used || 0) >= (row.count_total || 0) ? 'exception' : ''"
+                :stroke-width="6"
+                style="margin-top: 4px"
+              />
             </template>
             <template v-else>
               <span>额度: ${{ (row.quota_used || 0).toFixed(2) }} / ${{ (row.quota_total || 0).toFixed(2) }}</span>
@@ -496,7 +530,7 @@
             <el-option
               v-for="pkg in availablePackages"
               :key="pkg.id"
-              :label="`${pkg.name} (${pkg.type === 'subscription' ? '订阅' : '额度'})`"
+              :label="`${pkg.name} (${pkgTypeLabel(pkg.type)})`"
               :value="pkg.id"
             />
           </el-select>
@@ -577,24 +611,56 @@
           </el-form-item>
         </template>
 
+        <!-- 按次类型字段 -->
+        <template v-if="editPackageForm.type === 'count'">
+          <el-form-item label="总次数">
+            <el-input-number v-model="editPackageForm.count_total" :min="0" style="width: 100%" />
+          </el-form-item>
+          <el-form-item label="已用次数">
+            <el-input-number v-model="editPackageForm.count_used" :min="0" style="width: 100%" />
+          </el-form-item>
+        </template>
+
         <el-form-item label="允许的模型">
+          <div class="platform-quick-select">
+            <span class="quick-label">快捷选择：</span>
+            <el-check-tag
+              v-for="group in platformGroups"
+              :key="group.platform"
+              :checked="isPlatformFullySelected(group.platform, editPackageSelectedModels)"
+              @change="togglePlatformModels(group.platform, editPackageSelectedModels, v => editPackageSelectedModels = v)"
+              class="platform-tag"
+            >
+              {{ group.label }} ({{ group.models.length }})
+            </el-check-tag>
+            <el-button link type="danger" size="small" @click="editPackageSelectedModels = []" v-if="editPackageSelectedModels.length">
+              清空
+            </el-button>
+          </div>
           <el-select
             v-model="editPackageSelectedModels"
             multiple
             filterable
             collapse-tags
             collapse-tags-tooltip
+            :max-collapse-tags="3"
             placeholder="留空表示全部模型"
             style="width: 100%"
           >
-            <el-option
-              v-for="model in modelList"
-              :key="model.id"
-              :label="model.name"
-              :value="model.name"
-            />
+            <el-option-group
+              v-for="group in platformGroups"
+              :key="group.platform"
+              :label="group.label"
+            >
+              <el-option
+                v-for="model in group.models"
+                :key="model.id"
+                :label="model.display_name || model.name"
+                :value="model.name"
+              />
+            </el-option-group>
           </el-select>
-          <div class="form-tip">限制该套餐可使用的模型，不选则允许全部模型</div>
+          <div class="form-tip">点击平台标签快速选中该平台全部模型，不选则允许全部</div>
         </el-form-item>
       </el-form>
       <template #footer>
@@ -615,6 +681,43 @@ const loading = ref(false)
 const users = ref([])
 const pagination = reactive({ page: 1, pageSize: 20, total: 0 })
 const modelList = ref([])
+
+const platformLabelMap = {
+  claude: 'Claude', openai: 'OpenAI', gemini: 'Gemini', deepseek: 'DeepSeek',
+  qwen: '通义千问', glm: '智谱 GLM', moonshot: 'Kimi', doubao: '豆包',
+  baichuan: '百川', yi: '零一万物', minimax: 'MiniMax', stepfun: '阶跃星辰',
+  spark: '讯飞星火', siliconflow: '硅基流动', xai: 'xAI', mistral: 'Mistral',
+  cohere: 'Cohere',
+}
+
+const platformGroups = computed(() => {
+  const groups = {}
+  for (const m of modelList.value) {
+    const p = m.platform || 'other'
+    if (!groups[p]) groups[p] = { platform: p, label: platformLabelMap[p] || p, models: [] }
+    groups[p].models.push(m)
+  }
+  return Object.values(groups).sort((a, b) => (a.models[0]?.sort_order || 0) - (b.models[0]?.sort_order || 0))
+})
+
+function isPlatformFullySelected(platform, selected) {
+  const group = platformGroups.value.find(g => g.platform === platform)
+  if (!group || group.models.length === 0) return false
+  return group.models.every(m => selected.includes(m.name))
+}
+
+function togglePlatformModels(platform, selected, setter) {
+  const group = platformGroups.value.find(g => g.platform === platform)
+  if (!group) return
+  const names = group.models.map(m => m.name)
+  if (isPlatformFullySelected(platform, selected)) {
+    setter(selected.filter(n => !names.includes(n)))
+  } else {
+    const current = new Set(selected)
+    names.forEach(n => current.add(n))
+    setter([...current])
+  }
+}
 
 const dialogVisible = ref(false)
 const submitting = ref(false)
@@ -739,6 +842,16 @@ function getPriceRateType(rate) {
   if (rate < 1) return 'warning'
   if (rate > 1) return 'danger'
   return 'info'
+}
+
+function pkgTypeLabel(type) {
+  const map = { subscription: '订阅', quota: '额度', count: '按次' }
+  return map[type] || type
+}
+
+function pkgTypeTag(type) {
+  const map = { subscription: 'primary', quota: 'success', count: 'warning' }
+  return map[type] || 'info'
 }
 
 function formatDate(str) {
@@ -1079,6 +1192,8 @@ function handleEditUserPackage(row) {
     monthly_used: row.monthly_used || 0,
     quota_total: row.quota_total || 0,
     quota_used: row.quota_used || 0,
+    count_total: row.count_total || 0,
+    count_used: row.count_used || 0,
     allowed_models: row.allowed_models || ''
   }
   editPackageDialogVisible.value = true
@@ -1101,6 +1216,9 @@ async function handleSaveUserPackage() {
       data.daily_used = editPackageForm.value.daily_used
       data.weekly_used = editPackageForm.value.weekly_used
       data.monthly_used = editPackageForm.value.monthly_used
+    } else if (editPackageForm.value.type === 'count') {
+      data.count_total = editPackageForm.value.count_total
+      data.count_used = editPackageForm.value.count_used
     } else {
       data.quota_total = editPackageForm.value.quota_total
       data.quota_used = editPackageForm.value.quota_used
@@ -1138,7 +1256,7 @@ async function handleDeleteUserPackage(id) {
 }
 
 .page-header h2 {
-  color: #333;
+  color: var(--pink-text);
   margin: 0;
 }
 
@@ -1148,9 +1266,28 @@ async function handleDeleteUserPackage(id) {
   justify-content: flex-end;
 }
 
-.form-tip {
+.platform-quick-select {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.quick-label {
   font-size: 12px;
   color: #909399;
+  white-space: nowrap;
+}
+
+.platform-tag {
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.form-tip {
+  font-size: 12px;
+  color: #6b6573;
   margin-top: 4px;
 }
 
@@ -1162,7 +1299,7 @@ async function handleDeleteUserPackage(id) {
 .usage-summary {
   margin-bottom: 24px;
   padding: 16px;
-  background: #f5f7fa;
+  background: var(--pink-accent-light, #faf2f4);
   border-radius: 8px;
 }
 
@@ -1172,7 +1309,7 @@ async function handleDeleteUserPackage(id) {
 
 .usage-section h4 {
   margin: 0 0 12px 0;
-  color: #333;
+  color: var(--pink-text);
   font-size: 14px;
 }
 
@@ -1184,7 +1321,7 @@ async function handleDeleteUserPackage(id) {
 }
 
 .pkg-usage-info span {
-  background: #f0f2f5;
+  background: var(--pink-accent-light, #faf2f4);
   padding: 2px 8px;
   border-radius: 4px;
 }
@@ -1257,7 +1394,7 @@ async function handleDeleteUserPackage(id) {
 }
 
 .subscription-info .quota-item {
-  background: #f0f2f5;
+  background: var(--pink-accent-light, #faf2f4);
   padding: 2px 6px;
   border-radius: 4px;
   font-size: 11px;
@@ -1269,7 +1406,7 @@ async function handleDeleteUserPackage(id) {
 }
 
 .text-muted {
-  color: #909399;
+  color: #6b6573;
 }
 
 .unlimited {
